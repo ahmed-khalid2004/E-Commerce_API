@@ -13,48 +13,58 @@ namespace Persistence
 {
     public class DataSeeding(StoreDbContext _dbContext) : IDataSeeding
     {
-        public void DataSeed()
+        public async Task DataSeedAsync()
         {
-            if (_dbContext.Database.GetPendingMigrations().Any())
+            try
             {
-                _dbContext.Database.Migrate();
-            }
-
-            if (!_dbContext.ProductBrands.Any())
-            {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\brands.json"); 
-                var ProductBrandData = File.ReadAllText(path);
-                var ProductBrands = JsonSerializer.Deserialize<List<ProductBrand>>(ProductBrandData);
-                if (ProductBrands != null && ProductBrands.Any())
+                var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
+                if (pendingMigrations.Any())
                 {
-                    _dbContext.ProductBrands.AddRange(ProductBrands); 
-                    _dbContext.SaveChanges();
+                    await _dbContext.Database.MigrateAsync();
                 }
-            }
 
-            if (!_dbContext.ProductTypes.Any())
-            {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\types.json");
-                var ProductTypeData = File.ReadAllText(path);
-                var ProductTypes = JsonSerializer.Deserialize<List<ProductType>>(ProductTypeData);
-                if (ProductTypes != null && ProductTypes.Any())
+                if (!_dbContext.Set<ProductBrand>().Any())
                 {
-                    _dbContext.ProductTypes.AddRange(ProductTypes);
-                    _dbContext.SaveChanges();
-                }
-            }
+                    var brandDataPath = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\brands.json");
+                    await using var brandDataStream = File.OpenRead(brandDataPath);
+                    var productBrands = await JsonSerializer.DeserializeAsync<List<ProductBrand>>(brandDataStream);
 
-            if (!_dbContext.Products.Any())
-            {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\types.json");
-                var ProductData = File.ReadAllText(path);
-                var Products = JsonSerializer.Deserialize<List<Product>>(ProductData);
-                if (Products != null && Products.Any())
-                {
-                    _dbContext.Products.AddRange(Products);
+                    if (productBrands != null && productBrands.Any())
+                    {
+                        await _dbContext.ProductBrands.AddRangeAsync(productBrands);
+                    }
                 }
+
+                if (!_dbContext.Set<ProductType>().Any())
+                {
+                    var typeDataPath = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\types.json");
+                    await using var typeDataStream = File.OpenRead(typeDataPath);
+                    var productTypes = await JsonSerializer.DeserializeAsync<List<ProductType>>(typeDataStream);
+
+                    if (productTypes != null && productTypes.Any())
+                    {
+                        await _dbContext.ProductTypes.AddRangeAsync(productTypes);
+                    }
+                }
+
+                if (!_dbContext.Set<Product>().Any())
+                {
+                    var productDataPath = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\products.json");
+                    await using var productDataStream = File.OpenRead(productDataPath);
+                    var products = await JsonSerializer.DeserializeAsync<List<Product>>(productDataStream);
+
+                    if (products != null && products.Any())
+                    {
+                        await _dbContext.Products.AddRangeAsync(products);
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync();
             }
-            _dbContext.SaveChanges();
+            catch (Exception ex)
+            {
+                // Go to Error Page
+            }
         }
     }
 }
