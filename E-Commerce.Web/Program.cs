@@ -1,34 +1,62 @@
+using ApplicationLayer.Mappings;
+using DomainLayer.Contracts;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+using Persistence.Data;
+using Persistence.Repositories;
+using Service;
+using Services;
+using ServicesAbstraction;
 
 namespace E_Commerce.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
+            #region Add Service to Container
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<StoreDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAutoMapper(typeof(Service.AssemblyReference).Assembly);
+            builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+    //        builder.Services.AddAutoMapper(typeof(MappingProfile));
+            #endregion
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            using var scope = app.Services.CreateScope();
+
+            var ObjectOfdataSeeding = scope.ServiceProvider.GetRequiredService<IDataSeeding>();
+
+            await ObjectOfdataSeeding.DataSeedAsync();
+
+            #region Configure the HTTP request pipeline
+            if (!app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseStaticFiles();
 
-            app.UseAuthorization();
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
+            #endregion
 
-            app.MapControllers();
 
             app.Run();
         }
