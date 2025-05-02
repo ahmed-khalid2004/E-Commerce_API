@@ -7,7 +7,7 @@ namespace E_Commerce.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +15,11 @@ namespace E_Commerce.Web
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
             builder.Services.AddDbContext<StoreDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
+            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
 
             #endregion
 
@@ -30,7 +29,7 @@ namespace E_Commerce.Web
 
             var ObjectOfdataSeeding = scope.ServiceProvider.GetRequiredService<IDataSeeding>();
 
-            ObjectOfdataSeeding.DataSeed();
+            await ObjectOfdataSeeding.DataSeedAsync();
 
             #region Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
