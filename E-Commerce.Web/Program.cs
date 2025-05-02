@@ -1,3 +1,4 @@
+using ApplicationLayer.Mappings;
 using DomainLayer.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -11,7 +12,7 @@ namespace E_Commerce.Web
 {
     public class Program
     {
-        public static async void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,8 @@ namespace E_Commerce.Web
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddAutoMapper(typeof(Service.AssemblyReference).Assembly);
             builder.Services.AddScoped<IServiceManager, ServiceManager>();
-            builder.Services.AddScoped<IProductService, ProductService>();         
+            builder.Services.AddScoped<IProductService, ProductService>();
+    //        builder.Services.AddAutoMapper(typeof(MappingProfile));
             #endregion
 
             var app = builder.Build();
