@@ -1,13 +1,18 @@
+using ApplicationLayer.Mappings;
 using DomainLayer.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Persistence.Data;
+using Persistence.Repositories;
+using Service;
+using Services;
+using ServicesAbstraction;
 
 namespace E_Commerce.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -15,13 +20,16 @@ namespace E_Commerce.Web
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
             builder.Services.AddDbContext<StoreDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
-
+            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAutoMapper(typeof(Service.AssemblyReference).Assembly);
+            builder.Services.AddScoped<IServiceManager, ServiceManager>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+    //        builder.Services.AddAutoMapper(typeof(MappingProfile));
             #endregion
 
             var app = builder.Build();
@@ -30,7 +38,7 @@ namespace E_Commerce.Web
 
             var ObjectOfdataSeeding = scope.ServiceProvider.GetRequiredService<IDataSeeding>();
 
-            ObjectOfdataSeeding.DataSeed();
+            await ObjectOfdataSeeding.DataSeedAsync();
 
             #region Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
