@@ -10,15 +10,8 @@ using System.Threading.Tasks;
 
 namespace Persistence.Repositories
 {
-    public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
+    public class GenericRepository<TEntity, TKey>(StoreDbContext _dbContext) : IGenericRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
     {
-        private readonly StoreDbContext _dbContext;
-
-        public GenericRepository(StoreDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
         public async Task AddAsync(TEntity entity) => await _dbContext.Set<TEntity>().AddAsync(entity);
 
         public async Task<IEnumerable<TEntity>> GetAllAsync() => await _dbContext.Set<TEntity>().ToListAsync();
@@ -28,5 +21,17 @@ namespace Persistence.Repositories
         public void Remove(TEntity entity) => _dbContext.Set<TEntity>().Remove(entity);
 
         public void Update(TEntity entity) => _dbContext.Set<TEntity>().Update(entity);
+
+        #region With Specifications
+        public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecification<TEntity, TKey> specifications)
+        {
+            return await SpecificationEvaluator.CreateQuery(inputQuery: _dbContext.Set<TEntity>(), specifications: specifications).ToListAsync();
+        }
+
+        public async Task<TEntity?> GetByIdAsync(ISpecification<TEntity, TKey> specifications)
+        {
+            return await SpecificationEvaluator.CreateQuery(inputQuery: _dbContext.Set<TEntity>(), specifications: specifications).FirstOrDefaultAsync();
+        }
+        #endregion
     }
 }
