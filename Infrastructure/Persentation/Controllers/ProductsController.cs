@@ -3,6 +3,7 @@ using ServicesAbstraction;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Shared.DataTransferObjects;
+using Shared;
 
 namespace Presentation.Controllers
 {
@@ -14,9 +15,9 @@ namespace Presentation.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetAllProducts()
+        public async Task<ActionResult<PaginatedResult<ProductDTO>>> GetAllProducts([FromQuery] ProductQueryParams queryParams)
         {
-            var products = await _serviceManager.ProductService.GetAllProductsAsync();
+            var products = await _serviceManager.ProductService.GetAllProductsAsync(queryParams);
             return Ok(products);
         }
 
@@ -26,6 +27,21 @@ namespace Presentation.Controllers
         {
             var product = await _serviceManager.ProductService.GetProductByIdAsync(id);
             return Ok(product);
+        }
+
+        [HttpGet("Types")]
+        public async Task<ActionResult<IEnumerable<TypeDTO>>> GetAllTypes()
+        {
+            var Types = await _serviceManager.ProductService.GetAllTypesAsync();
+            return Ok(Types);
+        }
+
+        [HttpGet("Brands")]
+
+        public async Task<ActionResult<IEnumerable<TypeDTO>>> GetAllBrands()
+        {
+            var Brands = await _serviceManager.ProductService.GetAllBrandsAsync();
+            return Ok(Brands);
         }
     }
 }

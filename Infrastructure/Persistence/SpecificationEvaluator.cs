@@ -7,7 +7,7 @@ namespace Persistence
 {
     public static class SpecificationEvaluator
     {
-        public static IQueryable<TEntity> CreateQuery<TEntity, TKey>(IQueryable<TEntity> inputQuery,ISpecification<TEntity, TKey> specifications) where TEntity : BaseEntity<TKey>
+        public static IQueryable<TEntity> CreateQuery<TEntity, TKey>(IQueryable<TEntity> inputQuery,ISpecifications<TEntity, TKey> specifications) where TEntity : BaseEntity<TKey>
         {
             var query = inputQuery;
 
@@ -16,9 +16,24 @@ namespace Persistence
                 query = query.Where(specifications.Criteria);
             }
 
+            if(specifications.OrderBy is not null)
+            {
+                query = query.OrderBy(specifications.OrderBy);
+            }
+
+            if (specifications.OrderByDescending is not null)
+            {
+                query = query.OrderByDescending(specifications.OrderByDescending);
+            }
+
             if (specifications.IncludeExpressions != null && specifications.IncludeExpressions.Count > 0)
             {
                 query = specifications.IncludeExpressions.Aggregate(query, (current, include) => current.Include(include));
+            }
+
+            if(specifications.IsPaginated)
+            {
+                query = query.Skip(specifications.Skip).Take(specifications.Take); 
             }
 
             return query;
