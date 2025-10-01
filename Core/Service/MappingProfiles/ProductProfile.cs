@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using DomainLayer.Models;
+using DomainLayer.Models.ProductModule;
 using Services.MappingProfiles;
 using Shared.DataTransferObjects;
 
