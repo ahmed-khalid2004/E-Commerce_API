@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using Shared.DataTransferObjects;
-using Microsoft.Extensions.Configuration;
 using DomainLayer.Models.ProductModule;
+using Microsoft.Extensions.Configuration;
+using Shared.DataTransferObjects.ProductModuleDTOs;
 
 namespace Services.MappingProfiles
 {

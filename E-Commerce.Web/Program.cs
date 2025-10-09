@@ -1,12 +1,16 @@
 using ApplicationLayer.Mappings;
 using DomainLayer.Contracts;
+using DomainLayer.Models.IdentityModule;
 using E_Commerce.Web.CustomMiddleWares;
 using E_Commerce.Web.Extensions;
 using E_Commerce.Web.Factories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Persistence.Data;
+using Persistence.Identity;
 using Persistence.Repositories;
 using Service;
 using Services;
@@ -34,7 +38,7 @@ namespace E_Commerce.Web
 
             #region Configure the HTTP request pipeline
             app.UseCustomExceptionMiddleWare();
-            if (!app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
                 app.UseSwaggerMiddleWares();
             }

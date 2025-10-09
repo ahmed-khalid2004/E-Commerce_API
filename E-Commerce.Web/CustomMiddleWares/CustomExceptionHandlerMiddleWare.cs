@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Exceptions;
+using Microsoft.AspNetCore.Http;
 using Shared.ErrorModels;
 
 namespace E_Commerce.Web.CustomMiddleWares
@@ -8,13 +9,13 @@ namespace E_Commerce.Web.CustomMiddleWares
         private readonly RequestDelegate _next;
         private readonly ILogger<CustomExceptionHandlerMiddleWare> _logger;
 
-        public CustomExceptionHandlerMiddleWare(RequestDelegate Next,ILogger<CustomExceptionHandlerMiddleWare>logger)
+        public CustomExceptionHandlerMiddleWare(RequestDelegate Next, ILogger<CustomExceptionHandlerMiddleWare> logger)
         {
             _next = Next;
             _logger = logger;
         }
 
-        public async Task InvokeASync(HttpContext httpContext)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
             try
             {
@@ -34,19 +35,26 @@ namespace E_Commerce.Web.CustomMiddleWares
 
         private static async Task HandleExceptionASync(HttpContext httpContext, Exception ex)
         {
-            httpContext.Response.StatusCode = ex switch
-            {
-                NotFoundException => StatusCodes.Status404NotFound,
-                _ => StatusCodes.Status500InternalServerError
-            };
-
             var Response = new ErrorToReturn()
             {
                 ErrorMessage = ex.Message,
-                StatusCode = httpContext.Response.StatusCode,
             };
 
+            Response.StatusCode = ex switch
+            {
+                NotFoundException => StatusCodes.Status404NotFound,
+                UnauthorizedException => StatusCodes.Status401Unauthorized,
+                BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
+                _ => StatusCodes.Status500InternalServerError
+            };
+            httpContext.Response.StatusCode = Response.StatusCode;
             await httpContext.Response.WriteAsJsonAsync(Response);
+        }
+
+        private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)
+        {
+            response.Errors = badRequestException.Errors;
+            return StatusCodes.Status400BadRequest;
         }
 
         private static async Task HandleNotFoundEndPointASync(HttpContext httpContext)

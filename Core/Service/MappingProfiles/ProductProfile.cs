@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using DomainLayer.Models.ProductModule;
 using Services.MappingProfiles;
-using Shared.DataTransferObjects;
+using Shared.DataTransferObjects.ProductModuleDTOs;
 
 namespace ApplicationLayer.Mappings
 {

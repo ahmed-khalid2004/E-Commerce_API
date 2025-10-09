@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ServicesAbstraction;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Shared.DataTransferObjects;
 using Shared;
+using Shared.DataTransferObjects.ProductModuleDTOs;
 
 namespace Presentation.Controllers
 {

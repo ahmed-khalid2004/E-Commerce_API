@@ -1,5 +1,5 @@
 ﻿using Shared;
-using Shared.DataTransferObjects;
+using Shared.DataTransferObjects.ProductModuleDTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
