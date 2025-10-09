@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Persistence.Repositories
 {
-    public class BaseketRepository(IConnectionMultiplexer connection) : IBaseketRepository
+    public class BasketRepository(IConnectionMultiplexer connection) : IBaseketRepository
     {
         private readonly IDatabase _database = connection.GetDatabase();
         public async Task<CustomerBasket?> CreateOrUpdateBasketAsync(CustomerBasket basket, TimeSpan? TimeToLive = null)

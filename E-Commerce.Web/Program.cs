@@ -31,6 +31,9 @@ namespace E_Commerce.Web
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddWebApplicationServices();
+            builder.Services.AddJWTService(builder.Configuration);
+            builder.Services.AddCors();
+            builder.Services.AddAuthorizationHeader();
             #endregion
 
             var app = builder.Build();
@@ -44,9 +47,14 @@ namespace E_Commerce.Web
             }
 
             app.UseHttpsRedirection();
-            app.UseRouting();
             app.UseStaticFiles();
-
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseCors(policy =>
+    policy.AllowAnyHeader()
+          .AllowAnyMethod()
+          .WithOrigins("https://localhost:7236", "http://localhost:4200"));
             app.MapControllers();
 
             #endregion
