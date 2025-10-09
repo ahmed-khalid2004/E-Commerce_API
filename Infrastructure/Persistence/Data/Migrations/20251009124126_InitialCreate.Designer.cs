@@ -11,7 +11,7 @@ using Persistence.Data;
 namespace Persistence.Data.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20250502175959_InitialCreate")]
+    [Migration("20251009124126_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace Persistence.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DomainLayer.Models.Product", b =>
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -67,7 +67,7 @@ namespace Persistence.Data.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.ProductBrand", b =>
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductBrand", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -84,7 +84,7 @@ namespace Persistence.Data.Migrations
                     b.ToTable("ProductBrands");
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.ProductType", b =>
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -101,19 +101,19 @@ namespace Persistence.Data.Migrations
                     b.ToTable("ProductTypes");
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.Product", b =>
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.Product", b =>
                 {
-                    b.HasOne("DomainLayer.Models.ProductBrand", "ProductBrand")
+                    b.HasOne("DomainLayer.Models.ProductModule.ProductBrand", "ProductBrand")
                         .WithMany()
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DomainLayer.Models.ProductBrand", null)
+                    b.HasOne("DomainLayer.Models.ProductModule.ProductBrand", null)
                         .WithMany("Products")
                         .HasForeignKey("ProductBrandId");
 
-                    b.HasOne("DomainLayer.Models.ProductType", "ProductType")
+                    b.HasOne("DomainLayer.Models.ProductModule.ProductType", "ProductType")
                         .WithMany()
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -124,7 +124,7 @@ namespace Persistence.Data.Migrations
                     b.Navigation("ProductType");
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.ProductBrand", b =>
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductBrand", b =>
                 {
                     b.Navigation("Products");
                 });

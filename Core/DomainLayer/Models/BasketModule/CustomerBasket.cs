@@ -8,14 +8,8 @@ namespace DomainLayer.Models.BasketModule
 {
     public class CustomerBasket
     {
-        public int Id { get; set; }
+        public string Id { get; set; } // GUID : Created From Client [Frontend]
 
-        public string ProductName { get; set; } = default!;
-
-        public string PictureUrl { get; set; } = default!;
-
-        public int Quantity { get; set; }
-
-        public decimal Price { get; set; }
+        public ICollection<BasketItem> Items { get; set; } = [];
     }
 }

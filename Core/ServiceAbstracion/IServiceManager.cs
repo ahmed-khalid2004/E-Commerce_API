@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Contracts;
+using ServiceAbstracion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,11 @@ namespace ServicesAbstraction
 {
     public interface IServiceManager
     {
-        IProductService ProductService { get; }
+        public IProductService ProductService { get; }
+
+        public IBasketService BasketService { get; }
+
+        public IAuthenticationService AuthenticationService { get; }
+
     }
 }

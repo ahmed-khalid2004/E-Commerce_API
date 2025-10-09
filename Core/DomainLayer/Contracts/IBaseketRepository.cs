@@ -11,8 +11,8 @@ namespace DomainLayer.Contracts
     {
         Task<CustomerBasket?> GetBasketASync(string Key);
 
-        Task<CustomerBasket?> CreateOrUpdateBasketAsync(CustomerBasket basket,TimeSpan? TimeToLive = null);
+        Task<CustomerBasket?> CreateOrUpdateBasketAsync(CustomerBasket basket, TimeSpan? TimeToLive = null);
 
-        Task<bool> DeleteBasketBSync(string id);
+        Task<bool> DeleteBasketASync(string id);
     }
 }
