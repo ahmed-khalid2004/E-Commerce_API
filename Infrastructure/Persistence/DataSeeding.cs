@@ -65,6 +65,18 @@ namespace Persistence
                     }
                 }
 
+                if (!_dbContext.Set<DeliveryMethod>().Any())
+                {
+                    var DeliveryMethodDataPath = Path.Combine(Directory.GetCurrentDirectory(), @"..\Infrastructure\Persistence\Data\DataSeed\delivery.json");
+                    await using var DeliveryMethodDataStream = File.OpenRead(DeliveryMethodDataPath);
+                    var DeliveryMethods = await JsonSerializer.DeserializeAsync<List<DeliveryMethod>>(DeliveryMethodDataStream);
+
+                    if (DeliveryMethods is not null && DeliveryMethods.Any())
+                    {
+                        await _dbContext.Set<DeliveryMethod>().AddRangeAsync(DeliveryMethods);
+                    }
+                }
+
                 await _dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -106,7 +118,7 @@ namespace Persistence
                     await _userManager.AddToRoleAsync(User01, "Admin");
                     await _userManager.AddToRoleAsync(User02, "SuperAdmin");
                 }
-                await _identityDbContext.SaveChangesAsync();
+                
             }
             catch (Exception ex)
             {

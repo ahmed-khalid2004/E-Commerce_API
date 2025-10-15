@@ -35,8 +35,7 @@ namespace Presentation.Controllers
         [HttpGet("CurrentUser")]
         public async Task<ActionResult<UserDTO>> GetCurrentUser()
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var user = await _serviceManager.AuthenticationService.GetCurrentUserAsync(email!);
+            var user = await _serviceManager.AuthenticationService.GetCurrentUserAsync(GetEmailFromToken());
             return Ok(user);
         }
         [Authorize]
