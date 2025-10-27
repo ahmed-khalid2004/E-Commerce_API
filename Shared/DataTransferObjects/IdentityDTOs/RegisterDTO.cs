@@ -16,8 +16,8 @@ namespace Shared.DataTransferObjects.IdentityDTOs
 
         public string DisplayName { get; set; } = default!;
 
-        public string UserName { get; set; } = default!;
+        public string? UserName { get; set; } 
         [Phone]
-        public string PhoneNumber { get; set; } = default!;
+        public string? PhoneNumber { get; set; } 
     }
 }

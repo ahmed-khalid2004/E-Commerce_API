@@ -11,8 +11,8 @@ namespace ApplicationLayer.Mappings
         {
             // Product -> ProductDTO
             CreateMap<Product, ProductDTO>()
-                .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.ProductBrand.Name))
-                .ForMember(dest => dest.TypeName, opt => opt.MapFrom(src => src.ProductType.Name))
+                .ForMember(dest => dest.ProductBrand, opt => opt.MapFrom(src => src.ProductBrand.Name))
+                .ForMember(dest => dest.ProductType, opt => opt.MapFrom(src => src.ProductType.Name))
                 .ForMember(dest => dest.PictureUrl, opt => opt.MapFrom<PictureUrlResolver>());
             // ProductType -> TypeDTO
             CreateMap<ProductType, TypeDTO>();

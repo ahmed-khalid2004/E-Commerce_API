@@ -3,7 +3,9 @@ using E_Commerce.Web.CustomMiddleWares;
 using Service;
 using Services;
 using ServicesAbstraction;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace E_Commerce.Web.Extensions
 {
@@ -29,7 +31,24 @@ namespace E_Commerce.Web.Extensions
         public static IApplicationBuilder UseSwaggerMiddleWares(this IApplicationBuilder app)
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(O =>
+            {
+                O.ConfigObject = new ConfigObject()
+                {
+                    DisplayRequestDuration = true
+                };
+
+                O.DocumentTitle = "My E-Commerce API";
+
+                O.JsonSerializerOptions = new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+
+                O.DocExpansion(DocExpansion.None);
+                O.EnableFilter();
+                O.EnablePersistAuthorization();
+            });
             return app;
         }
     }

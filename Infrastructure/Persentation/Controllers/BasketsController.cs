@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Presentation.Controllers
 {
    // BaseUrl: http://localhost:5239/api/Basket
-    public class BasketController(IServiceManager _serviceManager) : ApiBaseController
+    public class BasketsController(IServiceManager _serviceManager) : ApiBaseController
     {
         [HttpGet]
         public async Task<ActionResult<BasketDTO>> GetBasket(string Key)

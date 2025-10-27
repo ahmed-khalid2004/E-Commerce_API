@@ -14,18 +14,18 @@ namespace Shared
 
         public int? TypeId { get; set; }
 
-        public ProductSortingOption SortingOption { get; set; }
+        public ProductSortingOption sort { get; set; }
 
-        public string? SearchValue { get; set; }
+        public string? search { get; set; }
 
-        public int PageIndex { get; set; } = 1;  
+        public int PageNumber { get; set; } = 1;  
 
         private int pageSize = DefaultPageSize;
 
         public int  PageSize
-        {
-            get => PageSize;
-            set => PageSize = (value > MaxPageSize) ? MaxPageSize : value;
+        {   
+            get => pageSize;
+            set => pageSize = (value > MaxPageSize) ? MaxPageSize : value;
         }
     }
 }
