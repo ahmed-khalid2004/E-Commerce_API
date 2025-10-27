@@ -12,7 +12,7 @@ namespace Shared
         {
             PageIndex = pageIndex;
             PageSize = pageSize;
-            TotalCount = totalCount;
+            Count = totalCount;
             Data = data;
         }
 
@@ -20,7 +20,7 @@ namespace Shared
 
         public int PageSize { get; set; }
 
-        public int TotalCount { get; set; }
+        public int Count { get; set; }
 
         public IEnumerable<TEntity> Data { get; set; }
     }

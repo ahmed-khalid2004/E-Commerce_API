@@ -25,7 +25,7 @@ namespace Presentation.Controllers
             var user = await _serviceManager.AuthenticationService.RegisterAsync(registerDTO);
             return Ok(user);
         }
-        [HttpGet("CheckEmail")]
+        [HttpGet("emailexists")]
         public async Task<ActionResult<bool>> CheckEmail(string email)
         {
             var exists = await _serviceManager.AuthenticationService.CheckEmailAsync(email);

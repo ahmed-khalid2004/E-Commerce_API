@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Persistence;
 using Persistence.Data;
 using Persistence.Repositories;
@@ -18,12 +19,48 @@ namespace E_Commerce.Web.Extensions
 {
     public static class ServicesRegisteration
     {
-        public static IServiceCollection AddSwaggerServices(this IServiceCollection Services)
+        public static IServiceCollection AddAuthorizationHeader(this IServiceCollection Services)
         {
             Services.AddEndpointsApiExplorer();
-            Services.AddSwaggerGen();
+            Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new() { Title = "E-Commerce.Web", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Description = @"JWT Authorization header using the Bearer scheme.  
+                      Enter 'Bearer' [space] and then your token in the text input below.  
+                      Example: 'Bearer 12345abcdef'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new List<string>()
+        }
+    });
+            });
+
             return Services;
         }
+        //public static IServiceCollection AddSwaggerServices(this IServiceCollection Services)
+        //{
+        //    Services.AddEndpointsApiExplorer();
+        //    Services.AddSwaggerGen();
+        //    return Services;
+        //}
 
         public static IServiceCollection AddWebApplicationServices(this IServiceCollection Services)
         {
@@ -63,44 +100,6 @@ namespace E_Commerce.Web.Extensions
             return Services;
         }
 
-        public static IServiceCollection AddAuthorizationHeader(this IServiceCollection Services)
-        {
-            Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new() { Title = "E-Commerce.Web", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                {
-                    Description = @"JWT Authorization header using the Bearer scheme.  
-                      Enter 'Bearer' [space] and then your token in the text input below.  
-                      Example: 'Bearer 12345abcdef'",
-                    Name = "Authorization",
-                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
-
-                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement()
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-            },
-            new List<string>()
-        }
-    });
-            });
-
-            return Services;
-        }
 
     }
 }
