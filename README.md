@@ -382,21 +382,25 @@ export StripeSettings__SecretKey="sk_live_YOUR_LIVE_KEY"
 
 ## Screenshots / Demo
 
-### Suggested Screenshots
-1. **Swagger API Documentation** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/SwaggerUI.png`)
-   - Caption: "Complete API documentation with JWT authentication support"
+### API Documentation
+![Swagger API Documentation](https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/SwaggerUI.png)
+*Complete API documentation with JWT authentication support*
 
-2. **Product Catalog with Pagination** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Products.png`)
-   - Caption: "Paginated product listing with filtering and sorting"
+### Product Catalog
+![Product Catalog with Pagination](https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Products.png)
+*Paginated product listing with filtering and sorting*
 
-3. **Order Management** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Orders.png`)
-   - Caption: "Detailed order view with items and delivery information"
+### Order Management
+![Order Management](https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Orders.png)
+*Detailed order view with items and delivery information*
 
-4. **Authentication Flow** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Authentication.png`)
-   - Caption: "JWT token-based authentication process"
+### Authentication Flow
+![Authentication Flow](https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Authentication.png)
+*JWT token-based authentication process*
 
-5. **Payment Integration** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Payment.png`)
-   - Caption: "Stripe payment intent creation and processing"
+### Payment Integration
+![Payment Integration](https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Payment.png)
+*Stripe payment intent creation and processing*
 
 ### Demo Endpoints
 ```bash
