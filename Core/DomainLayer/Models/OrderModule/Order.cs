@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Stripe;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,15 +11,17 @@ namespace DomainLayer.Models.OrderModule
     {
         public Order()
         {
+           
         }
 
-        public Order(string userEmail, OrderAddress address, DeliveryMethod deliveryMethod, decimal subtotal, ICollection<OrderItem> items)
+        public Order(string userEmail, OrderAddress address, DeliveryMethod deliveryMethod, decimal subtotal, ICollection<OrderItem> items, string paymentIntentId)
         {
             BuyerEmail = userEmail;
             shipToAddress = address;
             DeliveryMethod = deliveryMethod;
             Subtotal = subtotal;
             Items = items;
+            PaymentIntentId = paymentIntentId;
         }
 
         public string BuyerEmail { get; set; } = default!;
@@ -35,6 +38,8 @@ namespace DomainLayer.Models.OrderModule
         public OrderStatus Status { get; set; }
         public int DeliveryMethodId { get; set; } //FK
 
-        public decimal GetTotal() => Subtotal + DeliveryMethod.Price;
+        public decimal GetTotal() => Subtotal + DeliveryMethod.Cost;
+
+        public string PaymentIntentId { get; set; } 
     }
 }

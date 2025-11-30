@@ -16,14 +16,23 @@ namespace E_Commerce.Web
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddWebApplicationServices();
-            builder.Services.AddJWTService(builder.Configuration);
             builder.Services.AddCors(op =>
             {
                 op.AddPolicy("AllowAll", builder =>
                 {
-                    builder.AllowAnyHeader();
-                    builder.AllowAnyMethod();
-                    builder.AllowAnyOrigin();
+                    builder.AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowAnyOrigin();
+                });
+            });
+
+            // Add JWT & Authorization
+            builder.Services.AddJWTService(builder.Configuration);
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Admin", policy =>
+                {
+                    policy.RequireRole("Admin");
                 });
             });
             builder.Services.AddAuthorizationHeader();
@@ -42,9 +51,9 @@ namespace E_Commerce.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCors("AllowAll");
             app.MapControllers();
 
             #endregion

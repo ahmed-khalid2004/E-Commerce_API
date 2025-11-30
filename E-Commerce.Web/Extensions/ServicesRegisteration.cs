@@ -97,6 +97,12 @@ namespace E_Commerce.Web.Extensions
                     IssuerSigningKey = key
                 };
             });
+
+            Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Admin", policy =>
+                    policy.RequireRole("Admin")); 
+            });
             return Services;
         }
 
