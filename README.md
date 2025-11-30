@@ -494,26 +494,6 @@ We welcome contributions! Please follow these guidelines:
 - Provide detailed reproduction steps
 - Include environment information (.NET version, OS, etc.)
 
-## License
-
-This project is licensed under the **MIT License**.
-
-**Rationale:** The MIT License is permissive, allows commercial use, and encourages open collaboration while providing liability protection for contributors.
-
-```
-MIT License
-
-Copyright (c) 2024 [Your Name/Organization]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-[Full MIT License text...]
-```
 
 ## Notes / Known Issues
 
