@@ -383,19 +383,19 @@ export StripeSettings__SecretKey="sk_live_YOUR_LIVE_KEY"
 ## Screenshots / Demo
 
 ### Suggested Screenshots
-1. **Swagger API Documentation** (`swagger-ui-screenshot.png`)
+1. **Swagger API Documentation** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/SwaggerUI.png`)
    - Caption: "Complete API documentation with JWT authentication support"
 
-2. **Product Catalog with Pagination** (`products-list.png`)
+2. **Product Catalog with Pagination** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Products.png`)
    - Caption: "Paginated product listing with filtering and sorting"
 
-3. **Order Management** (`order-details.png`)
+3. **Order Management** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Orders.png`)
    - Caption: "Detailed order view with items and delivery information"
 
-4. **Authentication Flow** (`jwt-auth-flow.png`)
+4. **Authentication Flow** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Authentication.png`)
    - Caption: "JWT token-based authentication process"
 
-5. **Payment Integration** (`stripe-payment.png`)
+5. **Payment Integration** (`https://github.com/ahmed-khalid2004/E-Commerce_API/blob/master/Images/Payment.png`)
    - Caption: "Stripe payment intent creation and processing"
 
 ### Demo Endpoints
