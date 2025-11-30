@@ -5,7 +5,7 @@
         public void Configure(EntityTypeBuilder<DeliveryMethod> builder)
         {
             builder.ToTable("DeliveryMethods");
-            builder.Property(D => D.Price)
+            builder.Property(D => D.Cost)
 
                    .HasColumnType("decimal(8,2)");
             builder.Property(D => D.ShortName)

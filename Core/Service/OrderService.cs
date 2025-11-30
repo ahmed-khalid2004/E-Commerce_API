@@ -4,6 +4,7 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.BasketModule;
 using DomainLayer.Models.OrderModule;
 using DomainLayer.Models.ProductModule;
+using Service.Specifications;
 using Service.Specifications.OrderModuleSpecifications;
 using ServiceAbstracion;
 using Shared.DataTransferObjects.IdentityDTOs;
@@ -25,6 +26,14 @@ namespace Service
             var Basket = await _baseketRepository.GetBasketASync(orderDto.BasketId)
                 ?? throw new BasketNotFoundException(orderDto.BasketId);
 
+            ArgumentNullException.ThrowIfNullOrEmpty(Basket.paymentIntentId);
+            var OrderRepo = _unitOfWork.GetRepository<Order, Guid>();
+            var orderSpec = new OrderWithPaymentIntentIdSpecifications(Basket.paymentIntentId);
+            var ExistingOrder = await OrderRepo.GetByIdAsync(orderSpec);
+            if (ExistingOrder is not null)
+            {
+                OrderRepo.Remove(ExistingOrder);
+            }
             List<OrderItem> OrderItems = [];
             var ProductRepo = _unitOfWork.GetRepository<Product, int>();
             foreach (var item in Basket.Items)
@@ -41,7 +50,7 @@ namespace Service
 
             var SubTotal = OrderItems.Sum(I => I.Price * I.Quantity);
 
-            var Order = new Order(Email,OrderAddress,DeliveryMethod,SubTotal,OrderItems);
+            var Order = new Order(Email,OrderAddress,DeliveryMethod,SubTotal,OrderItems,Basket.paymentIntentId);
             await _unitOfWork.GetRepository<Order, Guid>().AddAsync(Order);
             await _unitOfWork.SaveChangesAsync();
 

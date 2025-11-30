@@ -21,6 +21,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="StackExchange.Redis" Version="2.9.25" />
+		<PackageReference Include="Stripe.net" Version="50.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
