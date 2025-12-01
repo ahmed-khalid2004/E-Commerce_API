@@ -498,6 +498,12 @@ We welcome contributions! Please follow these guidelines:
 - Provide detailed reproduction steps
 - Include environment information (.NET version, OS, etc.)
 
+## License
+
+This project is licensed under the **MIT License**.
+
+**Rationale:** The MIT License is permissive, allows commercial use, and encourages open collaboration while providing liability protection for contributors.
+
 
 ## Notes / Known Issues
 
