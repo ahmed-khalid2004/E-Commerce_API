@@ -25,7 +25,7 @@ namespace Persistence.Repositories
             else
             {
                 var Repo = new GenericRepository<TEntity, TKey>(_dbContext);
-                _repositories["typeName"] = Repo;
+                _repositories[typeName] = Repo;
                 return Repo;
             }
         }
