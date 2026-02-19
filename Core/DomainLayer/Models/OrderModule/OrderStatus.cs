@@ -9,7 +9,7 @@ namespace DomainLayer.Models.OrderModule
     public enum OrderStatus
     {
         pending = 0,
-        PaymentRecevied = 1,
+        PaymentReceived = 1,
         PaymentFailed = 2
     }
 }
