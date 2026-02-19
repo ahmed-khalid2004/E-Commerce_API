@@ -41,7 +41,7 @@ namespace Presentation.Controllers
             return Ok(Order);
         }
 
-        [HttpPost("{id:guid}")]
+        [HttpGet("{id:guid}")]
         public async Task<ActionResult<IEnumerable<OrderToReturnDTO>>> GetOrdersById(Guid id)
         {
             var Order = await _serviceManager.OrderService.GetOrderByIdAsync(id);
