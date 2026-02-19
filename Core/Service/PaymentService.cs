@@ -41,7 +41,7 @@ namespace Service
                 .GetByIdAsync(Basket.deliveryMethodId.Value) ?? throw new DeliveryMethodNotFoundException(Basket.deliveryMethodId.Value);
             Basket.shippingPrice = deliveryMethod.Cost;
 
-            var BasketAmount = (long) (Basket.Items.Sum(i => i.Quantity * i.Price * 100) + deliveryMethod.Cost) * 100;
+            var BasketAmount = (long) (Basket.Items.Sum(i => i.Quantity * i.Price) + deliveryMethod.Cost) * 100;
             var PaymentService = new PaymentIntentService();
             if (Basket.paymentIntentId is null)
             {

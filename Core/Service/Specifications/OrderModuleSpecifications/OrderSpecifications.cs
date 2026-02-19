@@ -14,7 +14,7 @@ namespace Service.Specifications.OrderModuleSpecifications
 
         public OrderSpecifications(Guid id) : base(O => O.Id == id)
         {
-            AddInclude(O => O.DeliveryMethodId);
+            AddInclude(O => O.DeliveryMethod);
             AddInclude(O => O.Items);
         }
     }
