@@ -1,23 +1,15 @@
 ﻿using DomainLayer.Contracts;
 using ServiceAbstracion;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServicesAbstraction
 {
     public interface IServiceManager
     {
-        public IProductService ProductService { get; }
-
-        public IBasketService BasketService { get; }
-
-        public IAuthenticationService AuthenticationService { get; }
-        public IOrderService OrderService { get; }
-
-        public IPaymentService PaymentService { get; }
-
+        IProductService ProductService { get; }
+        IBasketService BasketService { get; }
+        IAuthenticationService AuthenticationService { get; }
+        IOrderService OrderService { get; }
+        IPaymentService PaymentService { get; }
+        ICategoryService CategoryService { get; }      // Phase 4 addition
     }
 }

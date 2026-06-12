@@ -5,17 +5,17 @@ namespace DomainLayer.Contracts
 {
     public interface ISpecifications<TEntity, TKey> where TEntity : BaseEntity<TKey>
     {
-        public Expression<Func<TEntity, bool>>? Criteria { get; }
+        Expression<Func<TEntity, bool>>? Criteria { get; }
+
         List<Expression<Func<TEntity, object>>> IncludeExpressions { get; }
+        List<string> IncludeStrings { get; }
 
-        Expression<Func<TEntity, object>> OrderBy { get; }
+        // Nullable — not every spec applies sorting
+        Expression<Func<TEntity, object>>? OrderBy { get; }
+        Expression<Func<TEntity, object>>? OrderByDescending { get; }
 
-        Expression<Func<TEntity, Object>> OrderByDescending { get; }
-
-        public int Skip { get; }
-
-        public int Take { get; }
-
-        public bool IsPaginated { get; set; }
+        int Skip { get; }
+        int Take { get; }
+        bool IsPaginated { get; set; }
     }
 }

@@ -110,6 +110,32 @@ namespace Persistence.Data.Migrations
                     b.ToTable("OrderItems", (string)null);
                 });
 
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Categories_Name");
+
+                    b.ToTable("Categories", (string)null);
+                });
+
             modelBuilder.Entity("DomainLayer.Models.ProductModule.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -163,6 +189,22 @@ namespace Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductBrands");
+                });
+
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductCategory", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId", "CategoryId");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("IX_ProductCategories_CategoryId");
+
+                    b.ToTable("ProductCategories", (string)null);
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductType", b =>
@@ -283,9 +325,33 @@ namespace Persistence.Data.Migrations
                     b.Navigation("ProductType");
                 });
 
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductCategory", b =>
+                {
+                    b.HasOne("DomainLayer.Models.ProductModule.Category", "Category")
+                        .WithMany("ProductCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DomainLayer.Models.ProductModule.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("DomainLayer.Models.OrderModule.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.Category", b =>
+                {
+                    b.Navigation("ProductCategories");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductBrand", b =>

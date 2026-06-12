@@ -6,12 +6,17 @@ namespace Service
 {
     public class CacheService(ICacheRepository cacheRepository) : ICacheService
     {
-        public async Task<string?> GetAsync(string Cachekey) => await cacheRepository.GetAsync(Cachekey);
+        public async Task<string?> GetAsync(string cacheKey)
+            => await cacheRepository.GetAsync(cacheKey);
 
-        public async Task SetAsync(string Cachekey, object CacheValue, TimeSpan timeToLive)
+        public async Task SetAsync(string cacheKey, object cacheValue, TimeSpan timeToLive)
         {
-          var serializedValue = JsonSerializer.Serialize(CacheValue);
-            await cacheRepository.SetAsync(Cachekey, serializedValue, timeToLive);
+            if (cacheValue is null) return;
+            var serialized = JsonSerializer.Serialize(cacheValue);
+            await cacheRepository.SetAsync(cacheKey, serialized, timeToLive);
         }
+
+        public async Task RemoveByPrefixAsync(string keyPrefix)
+            => await cacheRepository.RemoveByPrefixAsync(keyPrefix);
     }
 }

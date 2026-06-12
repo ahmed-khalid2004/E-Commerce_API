@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Add these lines to your .gitignore if not already there:
+appsettings.Development.json
+appsettings.Production.json
+*.user
