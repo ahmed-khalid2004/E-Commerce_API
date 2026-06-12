@@ -10,54 +10,61 @@ namespace E_Commerce.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            #region Add Service to Container
+            #region Services
             builder.Services.AddControllers();
-            //builder.Services.AddSwaggerServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddWebApplicationServices();
-            builder.Services.AddCors(op =>
+
+            // CORS — strict in production, open in development
+            builder.Services.AddCors(options =>
             {
-                op.AddPolicy("AllowAll", builder =>
+                if (builder.Environment.IsDevelopment())
                 {
-                    builder.AllowAnyHeader()
-                           .AllowAnyMethod()
-                           .AllowAnyOrigin();
-                });
+                    // Development: allow any origin for local frontend testing
+                    options.AddPolicy("CorsPolicy", policy =>
+                        policy.AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowAnyOrigin());
+                }
+                else
+                {
+                    // Production: only allow configured origins
+                    var allowedOrigins = builder.Configuration
+                        .GetSection("AllowedOrigins")
+                        .Get<string[]>() ?? [];
+
+                    options.AddPolicy("CorsPolicy", policy =>
+                        policy.AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .WithOrigins(allowedOrigins));
+                }
             });
 
-            // Add JWT & Authorization
             builder.Services.AddJWTService(builder.Configuration);
             builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("Admin", policy =>
-                {
-                    policy.RequireRole("Admin");
-                });
-            });
+                options.AddPolicy("Admin", policy => policy.RequireRole("Admin")));
             builder.Services.AddAuthorizationHeader();
             #endregion
 
             var app = builder.Build();
             await app.SeedDataBaseASync();
 
-            #region Configure the HTTP request pipeline
+            #region Middleware pipeline
             app.UseCustomExceptionMiddleWare();
+
+            // Swagger — development only
             if (app.Environment.IsDevelopment())
-            {
                 app.UseSwaggerMiddleWares();
-            }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseCors("AllowAll");
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
-
             #endregion
-
 
             app.Run();
         }

@@ -15,6 +15,8 @@ namespace DomainLayer.Models.ProductModule
         public ProductBrand ProductBrand { get; set; }
         public int BrandId { get; set; } // FK
         public ProductType ProductType { get; set; }
+        public ICollection<ProductCategory> ProductCategories { get; set; }
+                = new List<ProductCategory>();
         public int TypeId { get; set; } // FK
     }
 }

@@ -14,6 +14,7 @@ using Service;
 using Services;
 using ServicesAbstraction;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace E_Commerce.Web.Extensions
 {
@@ -25,53 +26,54 @@ namespace E_Commerce.Web.Extensions
             Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new() { Title = "E-Commerce.Web", Version = "v1" });
-
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
-                    Description = @"JWT Authorization header using the Bearer scheme.  
-                      Enter 'Bearer' [space] and then your token in the text input below.  
+                    Description = @"JWT Authorization header using the Bearer scheme.
+                      Enter 'Bearer' [space] and then your token in the text input below.
                       Example: 'Bearer 12345abcdef'",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new List<string>()
-        }
-    });
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new List<string>()
+                    }
+                });
             });
-
             return Services;
         }
-        //public static IServiceCollection AddSwaggerServices(this IServiceCollection Services)
-        //{
-        //    Services.AddEndpointsApiExplorer();
-        //    Services.AddSwaggerGen();
-        //    return Services;
-        //}
 
         public static IServiceCollection AddWebApplicationServices(this IServiceCollection Services)
         {
-            Services.Configure<ApiBehaviorOptions>((Options) =>
+            Services.Configure<ApiBehaviorOptions>(Options =>
             {
-                Options.InvalidModelStateResponseFactory = ApiResponseFactory.GenerateApiValidationErrorsResponse;
+                Options.InvalidModelStateResponseFactory =
+                    ApiResponseFactory.GenerateApiValidationErrorsResponse;
             });
+
+            // Serialize enums as strings everywhere (request binding + response JSON)
+            // ?sort=PriceAsc → bound correctly; response returns "PriceAsc" not 3
+            Services.AddControllers()
+                    .AddJsonOptions(o =>
+                        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
             return Services;
         }
 
-        public static IServiceCollection AddJWTService(this IServiceCollection Services,IConfiguration configuration)
+        public static IServiceCollection AddJWTService(
+            this IServiceCollection Services,
+            IConfiguration configuration)
         {
             var jwtSection = configuration.GetSection("JWT:Options");
             var secretKey = jwtSection["SecretKey"];
@@ -79,14 +81,14 @@ namespace E_Commerce.Web.Extensions
             var issuer = jwtSection["Issuer"];
             var audience = jwtSection["Audience"];
 
-            Services.AddAuthentication(Congig =>
+            Services.AddAuthentication(config =>
             {
-                Congig.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                Congig.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters()
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
@@ -100,12 +102,10 @@ namespace E_Commerce.Web.Extensions
 
             Services.AddAuthorization(options =>
             {
-                options.AddPolicy("Admin", policy =>
-                    policy.RequireRole("Admin")); 
+                options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
             });
+
             return Services;
         }
-
-
     }
 }

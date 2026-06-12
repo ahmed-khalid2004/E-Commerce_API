@@ -1,0 +1,42 @@
+[
+  {
+    "Name": "Grilled",
+    "Description": "Dishes primarily prepared on a grill or with grilled ingredients."
+  },
+  {
+    "Name": "Vegetarian",
+    "Description": "Meat-free dishes suitable for vegetarians."
+  },
+  {
+    "Name": "Pasta",
+    "Description": "Dishes featuring pasta as the main ingredient."
+  },
+  {
+    "Name": "Soup",
+    "Description": "Hot or cold soup-based dishes."
+  },
+  {
+    "Name": "Noodles",
+    "Description": "Asian or European noodle-based dishes."
+  },
+  {
+    "Name": "Seafood",
+    "Description": "Dishes featuring fish, shrimp, or other seafood."
+  },
+  {
+    "Name": "Dessert",
+    "Description": "Sweet dishes and frozen treats."
+  },
+  {
+    "Name": "Rice",
+    "Description": "Dishes where rice is a primary component."
+  },
+  {
+    "Name": "Curry",
+    "Description": "Spiced sauce-based dishes from Indian or Asian cuisines."
+  },
+  {
+    "Name": "Snack",
+    "Description": "Light bites and appetizers."
+  }
+]

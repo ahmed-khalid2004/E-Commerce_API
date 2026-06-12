@@ -1,52 +1,44 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ServicesAbstraction;
 using Shared.DataTransferObjects.OrderDTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Presentation.Controllers
 {
-    // BaseUrl: http://localhost:5239/api/Products
-    [Authorize]
+    [Authorize]   // All order endpoints require a logged-in user by default
     public class OrdersController(IServiceManager _serviceManager) : ApiBaseController
     {
+        // Authenticated — order belongs to the logged-in user
         [HttpPost]
-
         public async Task<ActionResult<OrderToReturnDTO>> CreateOrder(OrderDTO orderDTO)
         {
-            var Order = await _serviceManager.OrderService.CreateOrder(orderDTO, GetEmailFromToken());
-            return Ok(Order);
+            var order = await _serviceManager.OrderService.CreateOrder(orderDTO, GetEmailFromToken());
+            return Ok(order);
         }
 
+        // Public — delivery options shown before checkout even to guests
         [AllowAnonymous]
         [HttpGet("DeliveryMethods")]
         public async Task<ActionResult<IEnumerable<DeliveryMethodDTO>>> GetDeliveryMethods()
         {
-            var DeliveryMethods = await _serviceManager.OrderService.GetDeliveryMethodsAsync();
-            return Ok(DeliveryMethods);
+            var deliveryMethods = await _serviceManager.OrderService.GetDeliveryMethodsAsync();
+            return Ok(deliveryMethods);
         }
 
+        // Authenticated — user sees only their own orders
         [HttpGet]
-
         public async Task<ActionResult<IEnumerable<OrderToReturnDTO>>> GetAllOrders()
         {
-            var Order = await _serviceManager.OrderService.GetAllOrdersAsync(GetEmailFromToken());
-            return Ok(Order);
+            var orders = await _serviceManager.OrderService.GetAllOrdersAsync(GetEmailFromToken());
+            return Ok(orders);
         }
 
+        // Authenticated — user sees only their own order by id
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<OrderToReturnDTO>> GetOrdersById(Guid id)
+        public async Task<ActionResult<OrderToReturnDTO>> GetOrderById(Guid id)
         {
-            var Order = await _serviceManager.OrderService.GetOrderByIdAsync(id);
-            return Ok(Order);
+            var order = await _serviceManager.OrderService.GetOrderByIdAsync(id);
+            return Ok(order);
         }
     }
 }
-

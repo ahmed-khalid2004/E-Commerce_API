@@ -1,24 +1,29 @@
-﻿using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DomainLayer.Contracts;
+using StackExchange.Redis;
 
 namespace Persistence.Repositories
 {
     public class CacheRepository(IConnectionMultiplexer connection) : ICacheRepository
     {
-        readonly IDatabase _database = connection.GetDatabase();
-        public async Task<string?> GetAsync(string Cachekey)
+        private readonly IDatabase _database = connection.GetDatabase();
+        private readonly IServer _server = connection.GetServer(
+            connection.GetEndPoints().First());
+
+        public async Task<string?> GetAsync(string cacheKey)
         {
-            var Cachevalue =  await _database.StringGetAsync(Cachekey);
-            return Cachevalue.IsNullOrEmpty ? null : Cachevalue.ToString();
+            var value = await _database.StringGetAsync(cacheKey);
+            return value.IsNullOrEmpty ? null : value.ToString();
         }
 
-        public async Task SetAsync(string Cachekey, string CacheValue, TimeSpan timeToLive)
+        public async Task SetAsync(string cacheKey, string cacheValue, TimeSpan timeToLive)
+            => await _database.StringSetAsync(cacheKey, cacheValue, timeToLive);
+
+        public async Task RemoveByPrefixAsync(string keyPrefix)
         {
-            await _database.StringSetAsync(Cachekey, CacheValue, timeToLive);
+            // SCAN for keys matching prefix* — never use KEYS in production
+            var keys = _server.KeysAsync(pattern: $"{keyPrefix}*");
+            await foreach (var key in keys)
+                await _database.KeyDeleteAsync(key);
         }
     }
 }
