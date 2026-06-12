@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace Shared
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ProductSortingOption
     {
-        NameAsc =1,
-        NameDesc =2,
-        PriceAsc =3,
-        PriceDesc =4,
+        NameAsc = 1,
+        NameDesc = 2,
+        PriceAsc = 3,
+        PriceDesc = 4,
     }
 }

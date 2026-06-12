@@ -7,41 +7,46 @@ using Shared.DataTransferObjects.ProductModuleDTOs;
 
 namespace Presentation.Controllers
 {
-    // BaseUrl: http://localhost:5239/api/Products
     public class ProductsController(IServiceManager _serviceManager) : ApiBaseController
     {
-        // GET: api/Products
-        [Authorize("Admin")]
+        [AllowAnonymous]
         [HttpGet]
         [Cache]
-        public async Task<ActionResult<PaginatedResult<ProductDTO>>> GetAllProducts([FromQuery] ProductQueryParams queryParams)
-        {
-            var products = await _serviceManager.ProductService.GetAllProductsAsync(queryParams);
-            return Ok(products);
-        }
+        public async Task<ActionResult<PaginatedResult<ProductDTO>>> GetAllProducts(
+            [FromQuery] ProductQueryParams queryParams)
+            => Ok(await _serviceManager.ProductService.GetAllProductsAsync(queryParams));
 
-        // GET: api/Products/10
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
+        [Cache]
         public async Task<ActionResult<ProductDTO>> GetProduct(int id)
+            => Ok(await _serviceManager.ProductService.GetProductByIdAsync(id));
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [InvalidateCache("api/products")]
+        public async Task<ActionResult<ProductDTO>> CreateProduct([FromBody] CreateProductDTO dto)
         {
-            var product = await _serviceManager.ProductService.GetProductByIdAsync(id);
-            return Ok(product);
+            var created = await _serviceManager.ProductService.CreateProductAsync(dto);
+            return CreatedAtAction(nameof(GetProduct), new { id = created.Id }, created);
         }
 
-        [HttpGet("Types")]
-        [Cache]
-        public async Task<ActionResult<IEnumerable<TypeDTO>>> GetAllTypes()
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id:int}")]
+        [InvalidateCache("api/products")]
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductDTO dto)
         {
-            var Types = await _serviceManager.ProductService.GetAllTypesAsync();
-            return Ok(Types);
+            await _serviceManager.ProductService.UpdateProductAsync(id, dto);
+            return NoContent();
         }
 
-        [HttpGet("Brands")]
-        [Cache]
-        public async Task<ActionResult<IEnumerable<TypeDTO>>> GetAllBrands()
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int}")]
+        [InvalidateCache("api/products")]
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            var Brands = await _serviceManager.ProductService.GetAllBrandsAsync();
-            return Ok(Brands);
+            await _serviceManager.ProductService.DeleteProductAsync(id);
+            return NoContent();
         }
     }
 }

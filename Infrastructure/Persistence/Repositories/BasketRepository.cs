@@ -6,7 +6,7 @@ namespace Persistence.Repositories
 {
     public class BasketRepository(IConnectionMultiplexer connection) : IBaseketRepository
     {
-        private readonly IDatabase _database = connection.GetDatabase();
+        private readonly IDatabase _database = connection.GetDatabase();    
         public async Task<CustomerBasket?> CreateOrUpdateBasketAsync(CustomerBasket basket, TimeSpan? TimeToLive = null)
         {
             var JsonBasket = JsonSerializer.Serialize(basket);
@@ -21,10 +21,10 @@ namespace Persistence.Repositories
 
         public async Task<CustomerBasket?> GetBasketASync(string Key)
         {
-            var Basket = await _database.StringGetAsync(Key);
-            if (Basket.IsNullOrEmpty)
+           var Basket = await _database.StringGetAsync(Key);
+            if (Basket.IsNullOrEmpty)   
                 return null;
-            else
+            else 
                 return JsonSerializer.Deserialize<CustomerBasket>(Basket!);
         }
     }

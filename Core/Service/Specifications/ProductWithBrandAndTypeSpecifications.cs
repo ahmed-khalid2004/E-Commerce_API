@@ -1,30 +1,25 @@
 ﻿using DomainLayer.Models.ProductModule;
 using Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Service.Specifications
 {
-     class ProductWithBrandAndTypeSpecifications : BaseSpecifications<Product, int>
+    class ProductWithBrandAndTypeSpecifications : BaseSpecifications<Product, int>
     {
-        public ProductWithBrandAndTypeSpecifications(ProductQueryParams queryParams) 
-            : base(p => (!queryParams.BrandId.HasValue || p.BrandId == queryParams.BrandId)
-        && (!queryParams.TypeId.HasValue || p.TypeId == queryParams.TypeId)
-            && (string.IsNullOrWhiteSpace(queryParams.search) || p.Name.ToLower().Contains(queryParams.search.ToLower())))
+        public ProductWithBrandAndTypeSpecifications(ProductQueryParams queryParams)
+            : base(p =>
+                (!queryParams.BrandId.HasValue || p.BrandId == queryParams.BrandId) &&
+                (!queryParams.TypeId.HasValue || p.TypeId == queryParams.TypeId) &&
+                (!queryParams.CategoryId.HasValue || p.ProductCategories.Any(pc => pc.CategoryId == queryParams.CategoryId)) &&
+                (string.IsNullOrWhiteSpace(queryParams.search) || p.Name.ToLower().Contains(queryParams.search.ToLower()))
+            )
         {
             AddInclude(p => p.ProductBrand);
             AddInclude(p => p.ProductType);
+            // Loads ProductCategories join rows + their Category in one SQL JOIN
+            AddInclude("ProductCategories.Category");
+
             switch (queryParams.sort)
             {
-                case ProductSortingOption.NameAsc:
-                    AddOrderBy(p => p.Name);
-                    break;
-                case ProductSortingOption.NameDesc:
-                    AddOrderByDescending(p => p.Name);
-                    break;
                 case ProductSortingOption.PriceAsc:
                     AddOrderBy(p => p.Price);
                     break;
@@ -32,15 +27,19 @@ namespace Service.Specifications
                     AddOrderByDescending(p => p.Price);
                     break;
                 default:
+                    AddOrderBy(p => p.Name);
                     break;
             }
-            ApplyPagination(queryParams.PageSize,queryParams.PageNumber);
+
+            ApplyPagination(queryParams.PageSize, queryParams.PageNumber);
         }
 
-        public ProductWithBrandAndTypeSpecifications(int id) : base(p => p.Id == id)
+        public ProductWithBrandAndTypeSpecifications(int id)
+            : base(p => p.Id == id)
         {
             AddInclude(p => p.ProductBrand);
             AddInclude(p => p.ProductType);
+            AddInclude("ProductCategories.Category");
         }
     }
 }
