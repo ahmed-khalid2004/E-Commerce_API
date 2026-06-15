@@ -1,28 +1,27 @@
-﻿using DomainLayer.Models.ProductModule;
+﻿using DomainLayer.Models.OrderModule;
+using DomainLayer.Models.ProductModule;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence.Data
 {
     public class StoreDbContext : DbContext
     {
-        public StoreDbContext(DbContextOptions<StoreDbContext> options) : base(options)
-        {
-        }
+        public StoreDbContext(DbContextOptions<StoreDbContext> options) : base(options) { }
 
-        // Existing — untouched
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductBrand> ProductBrands { get; set; }
         public DbSet<ProductType> ProductTypes { get; set; }
-
-        // New — additive only
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Scans assembly for all IEntityTypeConfiguration<T> implementations,
-            // including CategoryConfigurations and ProductCategoryConfigurations.
-            // No manual registration needed — existing pattern preserved.
+            // "store" instead of "public" — SQL Server already owns "public"
+            modelBuilder.HasDefaultSchema("dbo");
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssemblyReference).Assembly);
         }
     }

@@ -1,41 +1,50 @@
-﻿using DomainLayer.Models.IdentityModule;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Persistence.Data;
 using Persistence.Identity;
+using Persistence.Repositories;
 using StackExchange.Redis;
-using System.Threading.Tasks;
 
 namespace Persistence
 {
     public static class InfrastructureServicesRegisteration
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection Services, IConfiguration Configuration)
+        public static IServiceCollection AddInfrastructureServices(
+            this IServiceCollection services,
+            IConfiguration configuration)
         {
-            Services.AddDbContext<StoreDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
-            });
+            // ── Single connection string for both DbContexts ───────────────────
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            Services.AddScoped<IDataSeeding, DataSeeding>();
-            Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            Services.AddScoped<IBaseketRepository, BasketRepository>();
-            Services.AddScoped<ICacheRepository, CacheRepository>();
+            // Store DbContext — schema: public
+            services.AddDbContext<StoreDbContext>(options =>
+                options.UseSqlServer(connectionString));
 
-            Services.AddSingleton<IConnectionMultiplexer>(_ =>
-            {
-                return ConnectionMultiplexer.Connect(Configuration.GetConnectionString("RedisConnectionString"));
-            });
+            // Identity DbContext — schema: identity — same DB, different schema
+            services.AddDbContext<StoreIdentityDbContext>(options =>
+                options.UseSqlServer(connectionString));
 
-            Services.AddDbContext<StoreIdentityDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection"));
-            });
+            // ── Repositories & UnitOfWork ─────────────────────────────────────
+            services.AddScoped<IDataSeeding, DataSeeding>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IBaseketRepository, BasketRepository>();
+            services.AddScoped<ICacheRepository, CacheRepository>();
 
-            Services.AddIdentityCore<ApplicationUser>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<StoreIdentityDbContext>();
+            // ── Redis ─────────────────────────────────────────────────────────
+            services.AddSingleton<IConnectionMultiplexer>(_ =>
+                ConnectionMultiplexer.Connect(
+                    configuration.GetConnectionString("RedisConnectionString")!));
 
-            return Services;
+            // ── ASP.NET Identity ──────────────────────────────────────────────
+            services.AddIdentityCore<ApplicationUser>()
+                    .AddRoles<IdentityRole>()
+                    .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
+            return services;
         }
     }
 }
