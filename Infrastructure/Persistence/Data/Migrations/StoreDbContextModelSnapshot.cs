@@ -17,6 +17,7 @@ namespace Persistence.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -50,7 +51,7 @@ namespace Persistence.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DeliveryMethods", (string)null);
+                    b.ToTable("DeliveryMethods", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.OrderModule.Order", b =>
@@ -83,7 +84,7 @@ namespace Persistence.Data.Migrations
 
                     b.HasIndex("DeliveryMethodId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.OrderModule.OrderItem", b =>
@@ -107,7 +108,7 @@ namespace Persistence.Data.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.Category", b =>
@@ -133,7 +134,7 @@ namespace Persistence.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Categories_Name");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.Product", b =>
@@ -171,7 +172,7 @@ namespace Persistence.Data.Migrations
 
                     b.HasIndex("TypeId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductBrand", b =>
@@ -188,7 +189,7 @@ namespace Persistence.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductBrands");
+                    b.ToTable("ProductBrands", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductCategory", b =>
@@ -204,7 +205,7 @@ namespace Persistence.Data.Migrations
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("IX_ProductCategories_CategoryId");
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductType", b =>
@@ -221,7 +222,7 @@ namespace Persistence.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductTypes");
+                    b.ToTable("ProductTypes", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.OrderModule.Order", b =>
@@ -259,7 +260,7 @@ namespace Persistence.Data.Migrations
 
                             b1.HasKey("OrderId");
 
-                            b1.ToTable("Orders");
+                            b1.ToTable("Orders", "dbo");
 
                             b1.WithOwner()
                                 .HasForeignKey("OrderId");
@@ -296,7 +297,7 @@ namespace Persistence.Data.Migrations
 
                             b1.HasKey("OrderItemId");
 
-                            b1.ToTable("OrderItems");
+                            b1.ToTable("OrderItems", "dbo");
 
                             b1.WithOwner()
                                 .HasForeignKey("OrderItemId");
@@ -334,7 +335,7 @@ namespace Persistence.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("DomainLayer.Models.ProductModule.Product", "Product")
-                        .WithMany()
+                        .WithMany("ProductCategories")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -350,6 +351,11 @@ namespace Persistence.Data.Migrations
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.Category", b =>
+                {
+                    b.Navigation("ProductCategories");
+                });
+
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.Product", b =>
                 {
                     b.Navigation("ProductCategories");
                 });
