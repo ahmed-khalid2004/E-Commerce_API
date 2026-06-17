@@ -20,7 +20,7 @@ namespace Persistence
             // ── Single connection string for both DbContexts ───────────────────
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            // Store DbContext — schema: public
+            // Store DbContext — schema: dbo
             services.AddDbContext<StoreDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
@@ -32,12 +32,12 @@ namespace Persistence
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBaseketRepository, BasketRepository>();
-            services.AddScoped<ICacheRepository, CacheRepository>();
 
-            // ── Redis ─────────────────────────────────────────────────────────
-            services.AddSingleton<IConnectionMultiplexer>(_ =>
-                ConnectionMultiplexer.Connect(
-                    configuration.GetConnectionString("RedisConnectionString")!));
+            // ── Redis (disabled until verified on server) ─────────────────────
+            // services.AddScoped<ICacheRepository, CacheRepository>();
+            // services.AddSingleton<IConnectionMultiplexer>(_ =>
+            //     ConnectionMultiplexer.Connect(
+            //         configuration.GetConnectionString("RedisConnectionString")!));
 
             // ── ASP.NET Identity ──────────────────────────────────────────────
             services.AddIdentityCore<ApplicationUser>()

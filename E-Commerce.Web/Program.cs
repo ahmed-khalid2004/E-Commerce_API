@@ -11,6 +11,7 @@ namespace E_Commerce.Web
             var builder = WebApplication.CreateBuilder(args);
 
             #region Services
+
             builder.Services.AddControllers();
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddApplicationServices();
@@ -41,16 +42,20 @@ namespace E_Commerce.Web
                 }
             });
 
+            // JWT + Authorization — registered once here only
             builder.Services.AddJWTService(builder.Configuration);
-            builder.Services.AddAuthorization(options =>
-                options.AddPolicy("Admin", policy => policy.RequireRole("Admin")));
+
+            // Swagger — registered always, but only used in Development middleware
             builder.Services.AddAuthorizationHeader();
+
             #endregion
 
             var app = builder.Build();
+
             await app.SeedDataBaseASync();
 
             #region Middleware pipeline
+
             app.UseCustomExceptionMiddleWare();
 
             // Swagger — development only
@@ -64,6 +69,7 @@ namespace E_Commerce.Web
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
             #endregion
 
             app.Run();

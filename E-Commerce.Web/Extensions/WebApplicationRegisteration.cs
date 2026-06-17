@@ -13,11 +13,8 @@ namespace E_Commerce.Web.Extensions
     {
         public static async Task SeedDataBaseASync(this WebApplication app)
         {
-
             using var scope = app.Services.CreateScope();
-
             var ObjectOfdataSeeding = scope.ServiceProvider.GetRequiredService<IDataSeeding>();
-
             await ObjectOfdataSeeding.DataSeedAsync();
             await ObjectOfdataSeeding.IdentityDataSeedAsync();
         }
@@ -37,14 +34,11 @@ namespace E_Commerce.Web.Extensions
                 {
                     DisplayRequestDuration = true
                 };
-
                 O.DocumentTitle = "My E-Commerce API";
-
                 O.JsonSerializerOptions = new JsonSerializerOptions()
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 };
-
                 O.DocExpansion(DocExpansion.None);
                 O.EnableFilter();
                 O.EnablePersistAuthorization();
