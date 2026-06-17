@@ -10,16 +10,26 @@ namespace Presentation.Attributes
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class CacheAttribute(int DurationInSec = 90) : ActionFilterAttribute
     {
+        private const bool CacheEnabled = false;
+
+          
+
         public override async Task OnActionExecutionAsync(
             ActionExecutingContext context,
             ActionExecutionDelegate next)
         {
+            if (!CacheEnabled)
+            {
+                await next();
+                return;
+            }
             var cacheService = context.HttpContext.RequestServices
                 .GetRequiredService<ICacheService>();
 
             string cacheKey = CacheKeyBuilder.Build(context.HttpContext.Request);
 
             var cachedValue = await cacheService.GetAsync(cacheKey);
+
 
             if (cachedValue is not null)
             {

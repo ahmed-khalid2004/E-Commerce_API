@@ -100,9 +100,11 @@ namespace E_Commerce.Web.Extensions
                 };
             });
 
+            // Authorization policies — registered ONCE here only
             Services.AddAuthorization(options =>
             {
                 options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("SuperAdmin", policy => policy.RequireRole("SuperAdmin"));
             });
 
             return Services;

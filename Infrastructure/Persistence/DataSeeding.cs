@@ -16,10 +16,11 @@ namespace Persistence
         RoleManager<IdentityRole> _roleManager,
         StoreIdentityDbContext _identityDbContext) : IDataSeeding
     {
+        // ── FIXED: Use AppContext.BaseDirectory so it works on any server ─────
         private static string SeedPath(string fileName)
             => Path.Combine(
-                Directory.GetCurrentDirectory(),
-                @"..\Infrastructure\Persistence\Data\DataSeed",
+                AppContext.BaseDirectory,
+                "DataSeed",
                 fileName);
 
         // ── Entry points ──────────────────────────────────────────────────────
