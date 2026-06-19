@@ -10,7 +10,7 @@ namespace Presentation.Attributes
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class CacheAttribute(int DurationInSec = 90) : ActionFilterAttribute
     {
-        private const bool CacheEnabled = false;
+        private const bool CacheEnabled = true;
 
           
 

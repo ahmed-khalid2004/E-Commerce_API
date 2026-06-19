@@ -18,12 +18,17 @@ namespace Service
         IMapper _mapper,
         ILogger<PaymentService> _logger) : IPaymentService
     {
-        public async Task<BasketDTO> CreateOrUpdatePaymentIntentAsync(string basketId)
+        // Stripe event type string constants (avoids relying on the Events class,
+        // whose namespace/availability differs across Stripe.net versions)
+        private const string PaymentIntentSucceededType = "payment_intent.succeeded";
+        private const string PaymentIntentPaymentFailedType = "payment_intent.payment_failed";
+
+        public async Task<BasketDTO> CreateOrUpdatePaymentIntentAsync(string userId, int deliveryMethodId)
         {
             StripeConfiguration.ApiKey = _configuration["StripeSettings:SecretKey"];
 
-            var basket = await _basketRepository.GetBasketASync(basketId)
-                ?? throw new BasketNotFoundException(basketId);
+            var basket = await _basketRepository.GetBasketASync(userId)
+                ?? throw new BasketNotFoundException(userId);
 
             var productRepo = _unitOfWork.GetRepository<Product, int>();
             foreach (var item in basket.Items)
@@ -33,12 +38,11 @@ namespace Service
                 item.Price = product.Price;
             }
 
-            ArgumentNullException.ThrowIfNull(basket.deliveryMethodId);
-
             var deliveryMethod = await _unitOfWork.GetRepository<DeliveryMethod, int>()
-                .GetByIdAsync(basket.deliveryMethodId.Value)
-                ?? throw new DeliveryMethodNotFoundException(basket.deliveryMethodId.Value);
+                .GetByIdAsync(deliveryMethodId)
+                ?? throw new DeliveryMethodNotFoundException(deliveryMethodId);
 
+            basket.deliveryMethodId = deliveryMethodId;
             basket.shippingPrice = deliveryMethod.Cost;
 
             var amount = (long)(basket.Items.Sum(i => i.Quantity * i.Price) + deliveryMethod.Cost) * 100;
@@ -70,46 +74,36 @@ namespace Service
         {
             var webhookSecret = _configuration["StripeSettings:WebhookSecret"]!;
 
-            // Verify the event came from Stripe — throws StripeException if invalid
-            var stripeEvent = EventUtility.ConstructEvent(
-                json,
-                stripeSignatureHeader,
-                webhookSecret);
-
+            var stripeEvent = EventUtility.ConstructEvent(json, stripeSignatureHeader, webhookSecret);
             var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
 
             switch (stripeEvent.Type)
             {
-                case "payment_intent.succeeded":
+                case PaymentIntentSucceededType:
                     {
-                        var intent = (PaymentIntent)stripeEvent.Data.Object;
-                        await UpdateOrderStatusAsync(
-                            orderRepo,
-                            intent.Id,
-                            OrderStatus.PaymentReceived);
-
+                        var intent = stripeEvent.Data.Object as PaymentIntent;
+                        _logger.LogInformation("PaymentIntent succeeded: {Id}", intent?.Id);
+                        if (intent is not null)
+                            await UpdateOrderStatusAsync(orderRepo, intent.Id, OrderStatus.PaymentReceived);
                         break;
                     }
-
-                case "payment_intent.payment_failed":
+                case PaymentIntentPaymentFailedType:
                     {
-                        var intent = (PaymentIntent)stripeEvent.Data.Object;
-                        await UpdateOrderStatusAsync(
-                            orderRepo,
-                            intent.Id,
-                            OrderStatus.PaymentFailed);
-
+                        var intent = stripeEvent.Data.Object as PaymentIntent;
+                        _logger.LogWarning("PaymentIntent failed: {Id}", intent?.Id);
+                        if (intent is not null)
+                            await UpdateOrderStatusAsync(orderRepo, intent.Id, OrderStatus.PaymentFailed);
                         break;
                     }
+                default:
+                    _logger.LogInformation("Unhandled Stripe event type: {Type}", stripeEvent.Type);
+                    break;
             }
         }
 
         private async Task UpdateOrderStatusAsync(
-            IGenericRepository<Order, Guid> orderRepo,
-            string paymentIntentId,
-            OrderStatus status)
+            IGenericRepository<Order, Guid> orderRepo, string paymentIntentId, OrderStatus status)
         {
-            // Find the order matching this payment intent
             var spec = new Service.Specifications.OrderWithPaymentIntentIdSpecifications(paymentIntentId);
             var order = await orderRepo.GetByIdAsync(spec);
 

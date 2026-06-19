@@ -7,9 +7,10 @@
         public string Description { get; set; } = string.Empty;
         public string PictureUrl { get; set; } = string.Empty;
         public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
+        public bool InStock => StockQuantity > 0;
         public string ProductBrand { get; set; } = string.Empty;
         public string ProductType { get; set; } = string.Empty;
-        // Phase 4+: category names; empty list when product has no categories
         public List<string> Categories { get; set; } = [];
     }
 }

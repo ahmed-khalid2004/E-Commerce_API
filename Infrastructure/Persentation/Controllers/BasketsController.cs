@@ -5,32 +5,29 @@ using Shared.DataTransferObjects.BasketModuleDTOs;
 
 namespace Presentation.Controllers
 {
+    // All basket endpoints require login — "Add to Cart" is the action that forces auth.
+    [Authorize]
     public class BasketsController(IServiceManager _serviceManager) : ApiBaseController
     {
-        // Public — guest shopping carts are allowed (basket key is the identifier)
-        [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<BasketDTO>> GetBasket(string Key)
+        public async Task<ActionResult<BasketDTO>> GetBasket()
         {
-            var basket = await _serviceManager.BasketService.GetBasketASync(Key);
+            var basket = await _serviceManager.BasketService.GetBasketASync(GetUserIdFromToken());
             return Ok(basket);
         }
 
-        // Public — guest can build a basket before logging in
-        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<BasketDTO>> CreateOrUpdate(BasketDTO basket)
         {
-            var result = await _serviceManager.BasketService.CreateOrUpdateBasketAsync(basket);
+            var result = await _serviceManager.BasketService
+                .CreateOrUpdateBasketAsync(basket, GetUserIdFromToken());
             return Ok(result);
         }
 
-        // Authenticated — only the owner should delete their basket
-        [Authorize]
-        [HttpDelete("{Key}")]
-        public async Task<ActionResult<bool>> DeleteBasket(string Key)
+        [HttpDelete]
+        public async Task<ActionResult<bool>> DeleteBasket()
         {
-            var result = await _serviceManager.BasketService.DeleteBasketASync(Key);
+            var result = await _serviceManager.BasketService.DeleteBasketASync(GetUserIdFromToken());
             return Ok(result);
         }
     }

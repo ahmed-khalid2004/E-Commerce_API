@@ -30,6 +30,8 @@ namespace Service
             () => Provider.GetRequiredService<IAuthenticationService>());
 
             Services.AddScoped<ICacheService, CacheService>();
+            Services.AddScoped<Func<ICacheService>>(Provider =>
+            () => Provider.GetRequiredService<ICacheService>());
 
             Services.AddScoped<IPaymentService, PaymentService>();
             Services.AddScoped<Func<IPaymentService>>(Provider =>
@@ -39,6 +41,10 @@ namespace Service
             Services.AddScoped<ICategoryService, CategoryService>();
             Services.AddScoped<Func<ICategoryService>>(Provider =>
             () => Provider.GetRequiredService<ICategoryService>());
+
+            Services.AddScoped<IEmailService, EmailService>();
+            Services.AddScoped<Func<IEmailService>>(Provider =>
+            () => Provider.GetRequiredService<IEmailService>());
 
             return Services;
         }

@@ -4,70 +4,57 @@ using Shared.ErrorModels;
 
 namespace E_Commerce.Web.CustomMiddleWares
 {
-    public class CustomExceptionHandlerMiddleWare
+    public class CustomExceptionHandlerMiddleWare(
+        RequestDelegate next,
+        ILogger<CustomExceptionHandlerMiddleWare> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<CustomExceptionHandlerMiddleWare> _logger;
-
-        public CustomExceptionHandlerMiddleWare(RequestDelegate Next, ILogger<CustomExceptionHandlerMiddleWare> logger)
-        {
-            _next = Next;
-            _logger = logger;
-        }
-
         public async Task InvokeAsync(HttpContext httpContext)
         {
             try
             {
-                await _next.Invoke(httpContext);
-                await HandleNotFoundEndPointASync(httpContext);
+                await next.Invoke(httpContext);
+                await HandleNotFoundEndPointAsync(httpContext);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Something Went Wrong");
-
-                await HandleExceptionASync(httpContext, ex);
-
+                logger.LogError(ex, "Something Went Wrong");
+                await HandleExceptionAsync(httpContext, ex);
             }
-
-
         }
 
-        private static async Task HandleExceptionASync(HttpContext httpContext, Exception ex)
+        private static async Task HandleExceptionAsync(HttpContext httpContext, Exception ex)
         {
-            var Response = new ErrorToReturn()
-            {
-                ErrorMessage = ex.Message,
-            };
+            var response = new ErrorToReturn { ErrorMessage = ex.Message };
 
-            Response.StatusCode = ex switch
+            response.StatusCode = ex switch
             {
                 NotFoundException => StatusCodes.Status404NotFound,
                 UnauthorizedException => StatusCodes.Status401Unauthorized,
-                BadRequestException badRequestException => GetBadRequestErrors(badRequestException, Response),
+                OutOfStockException => StatusCodes.Status400BadRequest,
+                BadRequestException b => GetBadRequestErrors(b, response),
                 _ => StatusCodes.Status500InternalServerError
             };
-            httpContext.Response.StatusCode = Response.StatusCode;
-            await httpContext.Response.WriteAsJsonAsync(Response);
+
+            httpContext.Response.StatusCode = response.StatusCode;
+            await httpContext.Response.WriteAsJsonAsync(response);
         }
 
-        private static int GetBadRequestErrors(BadRequestException badRequestException, ErrorToReturn response)
+        private static int GetBadRequestErrors(BadRequestException ex, ErrorToReturn response)
         {
-            response.Errors = badRequestException.Errors;
+            response.Errors = ex.Errors;
             return StatusCodes.Status400BadRequest;
         }
 
-        private static async Task HandleNotFoundEndPointASync(HttpContext httpContext)
+        private static async Task HandleNotFoundEndPointAsync(HttpContext httpContext)
         {
             if (httpContext.Response.StatusCode == StatusCodes.Status404NotFound)
             {
-                var Response = new ErrorToReturn()
+                var response = new ErrorToReturn
                 {
                     ErrorMessage = $"End Point {httpContext.Request.Path} Is Not Found",
-                    StatusCode = StatusCodes.Status404NotFound,
+                    StatusCode = StatusCodes.Status404NotFound
                 };
-
-                await httpContext.Response.WriteAsJsonAsync(Response);
+                await httpContext.Response.WriteAsJsonAsync(response);
             }
         }
     }

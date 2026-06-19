@@ -4,35 +4,36 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models.BasketModule;
 using ServiceAbstracion;
 using Shared.DataTransferObjects.BasketModuleDTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Service
 {
-    public class BasketService(IBaseketRepository _baseketRepository, IMapper _mapper) : IBasketService
+    public class BasketService(IBaseketRepository _basketRepository, IMapper _mapper) : IBasketService
     {
-        public async Task<BasketDTO> CreateOrUpdateBasketAsync(BasketDTO basket)
+        public async Task<BasketDTO> CreateOrUpdateBasketAsync(BasketDTO basket, string userId)
         {
-            var CustomerBasket = _mapper.Map<BasketDTO, CustomerBasket>(basket);
-            var CreateOrUpdateBasket = await _baseketRepository.CreateOrUpdateBasketAsync(CustomerBasket);
-            if (CreateOrUpdateBasket != null)
-                return await GetBasketASync(basket.Id);
-            else
-                throw new Exception("Can Not Create Or Update Basket Now , Try Again Later");
+            // Always force the basket Id to the authenticated user's Id.
+            // The frontend does not send an Id at all (it's nullable in the DTO);
+            // even if it did, this overwrite makes it impossible to target another user's basket.
+            basket.Id = userId;
+
+            var customerBasket = _mapper.Map<BasketDTO, CustomerBasket>(basket);
+            var saved = await _basketRepository.CreateOrUpdateBasketAsync(customerBasket);
+
+            if (saved is null)
+                throw new Exception("Can Not Create Or Update Basket Now, Try Again Later");
+
+            return await GetBasketASync(userId);
         }
 
-        public async Task<bool> DeleteBasketASync(string Key) => await _baseketRepository.DeleteBasketASync(Key);
+        public async Task<bool> DeleteBasketASync(string userId)
+            => await _basketRepository.DeleteBasketASync(userId);
 
-        public async Task<BasketDTO> GetBasketASync(string Key)
+        public async Task<BasketDTO> GetBasketASync(string userId)
         {
-            var Basket = await _baseketRepository.GetBasketASync(Key);
-            if (Basket is not null)
-                return _mapper.Map<CustomerBasket, BasketDTO>(Basket);
-            else
-                throw new BasketNotFoundException(Key);
+            var basket = await _basketRepository.GetBasketASync(userId)
+                ?? throw new BasketNotFoundException(userId);
+
+            return _mapper.Map<CustomerBasket, BasketDTO>(basket);
         }
     }
 }

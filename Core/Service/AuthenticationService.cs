@@ -7,120 +7,184 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ServiceAbstracion;
 using Shared.DataTransferObjects.IdentityDTOs;
-using System;
-using System.Collections.Generic;
+using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Service
 {
     public class AuthenticationService(
         UserManager<ApplicationUser> _userManager,
         IConfiguration _configuration,
-        IMapper _mapper) : IAuthenticationService
+        IMapper _mapper,
+        IEmailService _emailService,
+        IConnectionMultiplexer _redis) : IAuthenticationService
     {
-        public async Task<bool> CheckEmailAsync(string Email)
-        {
-            var user = await _userManager.FindByEmailAsync(Email);
-            return user is not null;
-        }
-        public async Task<UserDTO> GetCurrentUserAsync(string Email)
-        {
-            var user = await _userManager.FindByEmailAsync(Email) ?? throw new UserNotFoundException(Email);
-            return new UserDTO() { Email = user.Email, DisplayName = user.DisplayName, Token = await CreateTokenAsync(user)};
-        }
+        private readonly IDatabase _db = _redis.GetDatabase();
 
-        public async Task<AddressDTO> GetCurrentUserAddressAsync(string Email)
-        {
-            var user = await _userManager.Users.Include(U => U.Address)
-                .FirstOrDefaultAsync(U => U.Email==Email) ?? throw new UserNotFoundException(Email);
-                  return _mapper.Map<Address,AddressDTO>(user.Address);
-
-        }
-        public async Task<AddressDTO> UpdateCurrentUserAddressAsync(string Email, AddressDTO addressDTO)
-        {
-            var user = await _userManager.Users.Include(U => U.Address)
-              .FirstOrDefaultAsync(U => U.Email == Email) ?? throw new UserNotFoundException(Email);
-            if (user.Address is not null)
-            {
-                user.Address.FirstName = addressDTO.FirstName;
-                user.Address.LastName = addressDTO.LastName;
-                user.Address.Street = addressDTO.Street;
-                user.Address.City = addressDTO.City;
-                user.Address.Country = addressDTO.Country;
-            }
-            else
-            {
-                user.Address = _mapper.Map<AddressDTO, Address>(addressDTO);
-            }
-            await _userManager.UpdateAsync(user);
-            return _mapper.Map<AddressDTO>(user.Address);
-        }
+        // ── Auth ──────────────────────────────────────────────────────────────
 
         public async Task<UserDTO> LoginAsync(LoginDTO loginDTO)
         {
-            var user = await _userManager.FindByEmailAsync(loginDTO.Email) ?? throw new UserNotFoundException(loginDTO.Email);
+            var user = await _userManager.FindByEmailAsync(loginDTO.Email)
+                ?? throw new UserNotFoundException(loginDTO.Email);
 
-            var isValid = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
-            if (isValid)
-                return new UserDTO() { Email = user.Email, DisplayName = user.DisplayName, Token = await CreateTokenAsync(user) };
-            else throw new UnauthorizedException();
+            if (!await _userManager.CheckPasswordAsync(user, loginDTO.Password))
+                throw new UnauthorizedException();
+
+            return new UserDTO
+            {
+                Email = user.Email!,
+                DisplayName = user.DisplayName,
+                Token = await CreateTokenAsync(user)
+            };
         }
 
         public async Task<UserDTO> RegisterAsync(RegisterDTO registerDTO)
         {
-            var user = new ApplicationUser()
+            var user = new ApplicationUser
             {
                 DisplayName = registerDTO.DisplayName,
                 Email = registerDTO.Email,
                 UserName = registerDTO.Email,
-                PhoneNumber = registerDTO.PhoneNumber
+                PhoneNumber = registerDTO.PhoneNumber,
+                Address = _mapper.Map<AddressDTO, Address>(registerDTO.Address)  
             };
+
             var result = await _userManager.CreateAsync(user, registerDTO.Password);
-            if (result.Succeeded)
-                return new UserDTO() { Email = user.Email, DisplayName = user.DisplayName, Token = await CreateTokenAsync(user) };
-            else
+            if (!result.Succeeded)
+                throw new BadRequestException(result.Errors.Select(e => e.Description).ToList());
+
+            return new UserDTO
             {
-                var Errors = result.Errors.Select(e => e.Description).ToList();
-                throw new BadRequestException(Errors);
-            }
+                Email = user.Email!,
+                DisplayName = user.DisplayName,
+                Token = await CreateTokenAsync(user)
+            };
         }
 
+        public async Task<bool> CheckEmailAsync(string email)
+            => await _userManager.FindByEmailAsync(email) is not null;
+
+        // ── Address ───────────────────────────────────────────────────────────
+
+        public async Task<AddressDTO> GetCurrentUserAddressAsync(string email)
+        {
+            var user = await _userManager.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Email == email)
+                ?? throw new UserNotFoundException(email);
+
+            return _mapper.Map<Address, AddressDTO>(user.Address);
+        }
+
+        public async Task<AddressDTO> UpdateCurrentUserAddressAsync(string email, AddressDTO dto)
+        {
+            var user = await _userManager.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Email == email)
+                ?? throw new UserNotFoundException(email);
+
+            if (user.Address is not null)
+            {
+                user.Address.FirstName = dto.FirstName;
+                user.Address.LastName = dto.LastName;
+                user.Address.Street = dto.Street;
+                user.Address.City = dto.City;
+                user.Address.Country = dto.Country;
+            }
+            else
+            {
+                user.Address = _mapper.Map<AddressDTO, Address>(dto);
+            }
+
+            await _userManager.UpdateAsync(user);
+            return _mapper.Map<AddressDTO>(user.Address);
+        }
+
+        // ── Forgot Password — Step 1: Send OTP ────────────────────────────────
+
+        public async Task SendResetCodeAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email)
+                ?? throw new UserNotFoundException(email);
+
+            // Generate 6-digit OTP
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            // Store in Redis with 10-minute TTL
+            // Key: "otp:{email}" — one active OTP per email at a time
+            await _db.StringSetAsync(
+                $"otp:{email}",
+                otp,
+                TimeSpan.FromMinutes(10));
+
+            // Send email
+            await _emailService.SendOtpAsync(email, otp);
+        }
+
+        // ── Forgot Password — Step 2: Verify OTP ─────────────────────────────
+        public async Task<bool> VerifyResetCodeAsync(string email, string code)
+        {
+            var stored = await _db.StringGetAsync($"otp:{email}");
+            if (stored.IsNullOrEmpty || stored.ToString() != code)
+                return false;
+
+            // الكود صحيح — نسجل إن الإيميل ده Verified لمدة 10 دقايق
+            await _db.StringSetAsync($"otp-verified:{email}", "true", TimeSpan.FromMinutes(10));
+
+            // نمسح الـ OTP نفسه — مينفعش يستخدم تاني
+            await _db.KeyDeleteAsync($"otp:{email}");
+
+            return true;
+        }
+
+        // ── Forgot Password — Step 3: Reset Password ──────────────────────────
+        public async Task ResetPasswordAsync(ResetPasswordDTO dto)
+        {
+            var verified = await _db.StringGetAsync($"otp-verified:{dto.Email}");
+            if (verified.IsNullOrEmpty || verified.ToString() != "true")
+                throw new BadRequestException(["Please verify your reset code first."]);
+
+            var user = await _userManager.FindByEmailAsync(dto.Email)
+                ?? throw new UserNotFoundException(dto.Email);
+
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, resetToken, dto.NewPassword);
+
+            if (!result.Succeeded)
+                throw new BadRequestException(result.Errors.Select(e => e.Description).ToList());
+
+            await _db.KeyDeleteAsync($"otp-verified:{dto.Email}");
+        }
+
+        // ── Token ─────────────────────────────────────────────────────────────
 
         private async Task<string> CreateTokenAsync(ApplicationUser user)
         {
-            var claims = new List<Claim>()
+            var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id!),
-                new Claim(ClaimTypes.Email, user.Email!),
-                new Claim(ClaimTypes.Name, user.UserName!)
+                new(ClaimTypes.NameIdentifier, user.Id!),
+                new(ClaimTypes.Email,          user.Email!),
+                new(ClaimTypes.Name,           user.UserName!)
             };
-            var roles = await _userManager.GetRolesAsync(user);
 
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
+            var roles = await _userManager.GetRolesAsync(user);
+            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
             var jwtSection = _configuration.GetSection("JWT:Options");
-            var secretKey = jwtSection["SecretKey"];
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var issuer = jwtSection["Issuer"];
-            var audience = jwtSection["Audience"];
+            var key = new SymmetricSecurityKey(
+                                 Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!));
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
+                issuer: jwtSection["Issuer"],
+                audience: jwtSection["Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(1), 
-                signingCredentials: creds 
-            );
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
     }
 }

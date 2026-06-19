@@ -19,13 +19,15 @@ namespace Shared.DataTransferObjects.ProductModuleDTOs
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
 
+        [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
+        public int StockQuantity { get; set; } = 0;
+
         [Required]
         public int BrandId { get; set; }
 
         [Required]
         public int TypeId { get; set; }
 
-        // Optional — product can exist without categories
         public List<int> CategoryIds { get; set; } = [];
     }
 }
