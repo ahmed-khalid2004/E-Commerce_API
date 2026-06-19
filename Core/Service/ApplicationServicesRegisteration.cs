@@ -46,6 +46,10 @@ namespace Service
             Services.AddScoped<Func<IEmailService>>(Provider =>
             () => Provider.GetRequiredService<IEmailService>());
 
+            Services.AddScoped<IReviewService, ReviewService>();
+            Services.AddScoped<Func<IReviewService>>(Provider =>
+                () => Provider.GetRequiredService<IReviewService>());
+
             return Services;
         }
     }

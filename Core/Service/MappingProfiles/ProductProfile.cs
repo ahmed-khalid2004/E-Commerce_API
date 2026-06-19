@@ -43,6 +43,9 @@ namespace Service.MappingProfiles
             // ── Type ──────────────────────────────────────────────────────────
             CreateMap<ProductType, TypeDTO>();
             CreateMap<CreateTypeDTO, ProductType>();
+
+            CreateMap<ProductReview, ProductReviewDTO>();
+
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Presentation.Controllers
     {
         protected string GetEmailFromToken() => User.FindFirstValue(ClaimTypes.Email)!;
         protected string GetUserIdFromToken() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        protected string GetDisplayNameFromToken() => User.FindFirstValue("DisplayName")!;
 
     }
 }

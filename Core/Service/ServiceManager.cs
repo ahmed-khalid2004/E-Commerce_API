@@ -18,14 +18,14 @@ namespace Services
     UserManager<ApplicationUser> userManager,
     IConfiguration configuration,
     ILogger<PaymentService> logger,
-    IEmailService emailService,                  
-    IConnectionMultiplexer connectionMultiplexer)
+    IEmailService emailService,
+    IRedisClient redisClient)
     : IServiceManager
 
     {
         private readonly Lazy<IProductService> _lazyProductService = new(() => new ProductService(unitOfWork, mapper));
         private readonly Lazy<IBasketService> _lazyBasketService = new(() => new BasketService(baseketRepository, mapper));
-        private readonly Lazy<IAuthenticationService> _lazyAuthenticationService = new(() => new AuthenticationService(userManager, configuration, mapper, emailService, connectionMultiplexer));
+        private readonly Lazy<IAuthenticationService> _lazyAuthenticationService = new(() => new AuthenticationService(userManager, configuration, mapper, emailService, redisClient));
         private readonly Lazy<IOrderService> _lazyOrderService = new(() => new OrderService(mapper, baseketRepository, unitOfWork));
         private readonly Lazy<IPaymentService> _lazyPaymentService = new(() => new PaymentService(
         configuration,
@@ -35,6 +35,8 @@ namespace Services
         logger));
         private readonly Lazy<ICategoryService> _lazyCategoryService = new(() => new CategoryService(unitOfWork, mapper));
         private readonly Lazy<IEmailService> _LazyEmailService = new(() => new EmailService(configuration));
+        private readonly Lazy<IReviewService> _lazyReviewService = new(() => new ReviewService(unitOfWork, mapper));
+
 
         public IProductService ProductService => _lazyProductService.Value;
         public IBasketService BasketService => _lazyBasketService.Value;
@@ -43,5 +45,7 @@ namespace Services
         public IPaymentService PaymentService => _lazyPaymentService.Value;
         public ICategoryService CategoryService => _lazyCategoryService.Value;
         public IEmailService EmailService => _LazyEmailService.Value;
+        public IReviewService ReviewService => _lazyReviewService.Value;
+
     }
 }

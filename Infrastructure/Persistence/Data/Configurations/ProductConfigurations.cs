@@ -25,6 +25,9 @@ namespace Persistence.Data.Configurations
 
             builder.Property(P => P.Price)
              .HasColumnType("decimal(10,2)");
+
+            builder.Property(P => P.Discount)        
+         .HasColumnType("decimal(5,2)");
         }
     }
 }

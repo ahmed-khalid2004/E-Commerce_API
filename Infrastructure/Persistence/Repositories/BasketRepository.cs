@@ -1,31 +1,28 @@
-﻿using DomainLayer.Models.BasketModule;
-using StackExchange.Redis;
+﻿using DomainLayer.Contracts;
+using DomainLayer.Models.BasketModule;
 using System.Text.Json;
 
 namespace Persistence.Repositories
 {
-    public class BasketRepository(IConnectionMultiplexer connection) : IBaseketRepository
+    public class BasketRepository(IRedisClient redis) : IBaseketRepository
     {
-        private readonly IDatabase _database = connection.GetDatabase();    
         public async Task<CustomerBasket?> CreateOrUpdateBasketAsync(CustomerBasket basket, TimeSpan? TimeToLive = null)
         {
-            var JsonBasket = JsonSerializer.Serialize(basket);
-            var IsCreatedOrUpdated = await _database.StringSetAsync(basket.Id, JsonBasket, TimeToLive ?? TimeSpan.FromDays(30));
-            if (IsCreatedOrUpdated)
-                return await GetBasketASync(basket.Id);
-            else
-                return null;
+            var jsonBasket = JsonSerializer.Serialize(basket);
+            await redis.SetAsync(basket.Id, jsonBasket, TimeToLive ?? TimeSpan.FromDays(30));
+            return await GetBasketASync(basket.Id);
         }
 
-        public async Task<bool> DeleteBasketASync(string id) => await _database.KeyDeleteAsync(id);
+        public async Task<bool> DeleteBasketASync(string id)
+        {
+            await redis.DeleteAsync(id);
+            return true;
+        }
 
         public async Task<CustomerBasket?> GetBasketASync(string Key)
         {
-           var Basket = await _database.StringGetAsync(Key);
-            if (Basket.IsNullOrEmpty)   
-                return null;
-            else 
-                return JsonSerializer.Deserialize<CustomerBasket>(Basket!);
+            var basket = await redis.GetAsync(Key);
+            return basket is null ? null : JsonSerializer.Deserialize<CustomerBasket>(basket);
         }
     }
 }

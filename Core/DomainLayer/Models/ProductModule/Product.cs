@@ -15,6 +15,8 @@
 
         public ProductType ProductType { get; set; } = null!;
         public int TypeId { get; set; }
+        public decimal? Discount { get; set; }   
+        public ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
 
         public ICollection<ProductCategory> ProductCategories { get; set; }
             = new List<ProductCategory>();

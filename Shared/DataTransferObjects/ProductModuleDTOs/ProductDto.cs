@@ -12,5 +12,9 @@
         public string ProductBrand { get; set; } = string.Empty;
         public string ProductType { get; set; } = string.Empty;
         public List<string> Categories { get; set; } = [];
+        public decimal? Discount { get; set; }
+        public decimal FinalPrice => Discount.HasValue && Discount > 0
+            ? Math.Round(Price - (Price * Discount.Value / 100), 2)
+            : Price;
     }
 }
