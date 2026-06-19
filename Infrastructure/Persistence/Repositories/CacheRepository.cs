@@ -20,7 +20,6 @@ namespace Persistence.Repositories
 
         public async Task RemoveByPrefixAsync(string keyPrefix)
         {
-            // SCAN for keys matching prefix* — never use KEYS in production
             var keys = _server.KeysAsync(pattern: $"{keyPrefix}*");
             await foreach (var key in keys)
                 await _database.KeyDeleteAsync(key);

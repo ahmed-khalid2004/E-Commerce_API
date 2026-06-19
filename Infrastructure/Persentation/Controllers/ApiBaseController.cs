@@ -13,6 +13,7 @@ namespace Presentation.Controllers
     public abstract class ApiBaseController : ControllerBase
     {
         protected string GetEmailFromToken() => User.FindFirstValue(ClaimTypes.Email)!;
+        protected string GetUserIdFromToken() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     }
 }

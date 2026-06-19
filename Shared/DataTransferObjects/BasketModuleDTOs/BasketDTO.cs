@@ -1,23 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Shared.DataTransferObjects.BasketModuleDTOs
+﻿namespace Shared.DataTransferObjects.BasketModuleDTOs
 {
     public class BasketDTO
     {
-        public string Id { get; set; }
+        // Nullable on purpose — the frontend never sends this.
+        // The service always overwrites it with the authenticated UserId from the JWT.
+        public string? Id { get; set; }
 
         public ICollection<BasketItemDTO> Items { get; set; } = [];
-
         public string? clientSecret { get; set; }
-
         public string? paymentIntentId { get; set; }
-
         public int? deliveryMethodId { get; set; }
-
-        public decimal? shippingPrice { get;set; }
+        public decimal? shippingPrice { get; set; }
     }
 }

@@ -11,18 +11,15 @@ namespace E_Commerce.Web
             var builder = WebApplication.CreateBuilder(args);
 
             #region Services
-
             builder.Services.AddControllers();
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddWebApplicationServices();
 
-            // CORS — strict in production, open in development
             builder.Services.AddCors(options =>
             {
                 if (builder.Environment.IsDevelopment())
                 {
-                    // Development: allow any origin for local frontend testing
                     options.AddPolicy("CorsPolicy", policy =>
                         policy.AllowAnyHeader()
                               .AllowAnyMethod()
@@ -30,7 +27,6 @@ namespace E_Commerce.Web
                 }
                 else
                 {
-                    // Production: only allow configured origins
                     var allowedOrigins = builder.Configuration
                         .GetSection("AllowedOrigins")
                         .Get<string[]>() ?? [];
@@ -42,25 +38,20 @@ namespace E_Commerce.Web
                 }
             });
 
-            // JWT + Authorization — registered once here only
             builder.Services.AddJWTService(builder.Configuration);
-
-            // Swagger — registered always, but only used in Development middleware
             builder.Services.AddAuthorizationHeader();
-
             #endregion
 
             var app = builder.Build();
 
-            await app.SeedDataBaseASync();
+            try { await app.SeedDataBaseASync(); }
+            catch (Exception ex) { /* log only */ }
 
             #region Middleware pipeline
-
             app.UseCustomExceptionMiddleWare();
 
-            // Swagger — development only
-            if (app.Environment.IsDevelopment())
-                app.UseSwaggerMiddleWares();
+            // Swagger — always enabled (needed by frontend team on hosting)
+            app.UseSwaggerMiddleWares();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -69,7 +60,6 @@ namespace E_Commerce.Web
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
-
             #endregion
 
             app.Run();

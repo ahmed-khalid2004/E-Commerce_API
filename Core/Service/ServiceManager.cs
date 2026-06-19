@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Service;
 using ServiceAbstracion;
 using ServicesAbstraction;
+using StackExchange.Redis;
 
 namespace Services
 {
@@ -16,13 +17,15 @@ namespace Services
     IBaseketRepository baseketRepository,
     UserManager<ApplicationUser> userManager,
     IConfiguration configuration,
-    ILogger<PaymentService> logger)
+    ILogger<PaymentService> logger,
+    IEmailService emailService,                  
+    IConnectionMultiplexer connectionMultiplexer)
     : IServiceManager
 
     {
         private readonly Lazy<IProductService> _lazyProductService = new(() => new ProductService(unitOfWork, mapper));
         private readonly Lazy<IBasketService> _lazyBasketService = new(() => new BasketService(baseketRepository, mapper));
-        private readonly Lazy<IAuthenticationService> _lazyAuthenticationService = new(() => new AuthenticationService(userManager, configuration, mapper));
+        private readonly Lazy<IAuthenticationService> _lazyAuthenticationService = new(() => new AuthenticationService(userManager, configuration, mapper, emailService, connectionMultiplexer));
         private readonly Lazy<IOrderService> _lazyOrderService = new(() => new OrderService(mapper, baseketRepository, unitOfWork));
         private readonly Lazy<IPaymentService> _lazyPaymentService = new(() => new PaymentService(
         configuration,
@@ -31,6 +34,7 @@ namespace Services
         mapper,
         logger));
         private readonly Lazy<ICategoryService> _lazyCategoryService = new(() => new CategoryService(unitOfWork, mapper));
+        private readonly Lazy<IEmailService> _LazyEmailService = new(() => new EmailService(configuration));
 
         public IProductService ProductService => _lazyProductService.Value;
         public IBasketService BasketService => _lazyBasketService.Value;
@@ -38,5 +42,6 @@ namespace Services
         public IOrderService OrderService => _lazyOrderService.Value;
         public IPaymentService PaymentService => _lazyPaymentService.Value;
         public ICategoryService CategoryService => _lazyCategoryService.Value;
+        public IEmailService EmailService => _LazyEmailService.Value;
     }
 }

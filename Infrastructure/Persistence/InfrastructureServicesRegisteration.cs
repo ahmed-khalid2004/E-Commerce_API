@@ -31,18 +31,32 @@ namespace Persistence
             // ── Repositories & UnitOfWork ─────────────────────────────────────
             services.AddScoped<IDataSeeding, DataSeeding>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IBaseketRepository, BasketRepository>();
+            // ── Basket Repository: Redis when enabled, In-Memory fallback otherwise ───
+            var cachingEnabled = configuration.GetValue<bool>("Caching:Enabled");
+            if (cachingEnabled)
+            {
+                services.AddSingleton<IConnectionMultiplexer>(_ =>
+                    ConnectionMultiplexer.Connect(
+                        configuration.GetConnectionString("RedisConnectionString")!));
+                services.AddScoped<ICacheRepository, CacheRepository>();
+                services.AddScoped<IBaseketRepository, BasketRepository>();
+            }
+            else
+            {
+                services.AddScoped<IBaseketRepository, InMemoryBasketRepository>();
+            }
 
-            // ── Redis (disabled until verified on server) ─────────────────────
+
             // services.AddScoped<ICacheRepository, CacheRepository>();
-            // services.AddSingleton<IConnectionMultiplexer>(_ =>
-            //     ConnectionMultiplexer.Connect(
-            //         configuration.GetConnectionString("RedisConnectionString")!));
+            //services.AddSingleton<IConnectionMultiplexer>(_ =>
+            //    ConnectionMultiplexer.Connect(
+            //        configuration.GetConnectionString("RedisConnectionString")!));
 
             // ── ASP.NET Identity ──────────────────────────────────────────────
             services.AddIdentityCore<ApplicationUser>()
                     .AddRoles<IdentityRole>()
-                    .AddEntityFrameworkStores<StoreIdentityDbContext>();
+                    .AddEntityFrameworkStores<StoreIdentityDbContext>()
+                    .AddDefaultTokenProviders();  
 
             return services;
         }
