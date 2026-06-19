@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Persistence.Caching;
 using Persistence.Data;
 using Persistence.Identity;
 using Persistence.Repositories;
-using StackExchange.Redis;
 
 namespace Persistence
 {
@@ -35,9 +35,13 @@ namespace Persistence
             var cachingEnabled = configuration.GetValue<bool>("Caching:Enabled");
             if (cachingEnabled)
             {
-                services.AddSingleton<IConnectionMultiplexer>(_ =>
-                    ConnectionMultiplexer.Connect(
-                        configuration.GetConnectionString("RedisConnectionString")!));
+                    services.AddSingleton<IRedisClient>(_ =>
+                    {
+                        var restUrl = configuration["UpstashSettings:RestUrl"]!;
+                        var restToken = configuration["UpstashSettings:RestToken"]!;
+                        return new UpstashRedisClient(new HttpClient(), restUrl, restToken);
+                    });
+
                 services.AddScoped<ICacheRepository, CacheRepository>();
                 services.AddScoped<IBaseketRepository, BasketRepository>();
             }

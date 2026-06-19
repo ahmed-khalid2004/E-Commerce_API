@@ -364,3 +364,9 @@ FodyWeavers.xsd
 
 # Production secrets
 **/appsettings.Production.json
+
+# Development secrets
+**/appsettings.Development.json
+
+# Replacements secrets
+**/Replacements.txt

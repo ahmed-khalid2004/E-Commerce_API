@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.IdentityModule;
 using Microsoft.AspNetCore.Identity;
@@ -7,10 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ServiceAbstracion;
 using Shared.DataTransferObjects.IdentityDTOs;
-using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
+using System.Text; 
 
 namespace Service
 {
@@ -19,9 +19,8 @@ namespace Service
         IConfiguration _configuration,
         IMapper _mapper,
         IEmailService _emailService,
-        IConnectionMultiplexer _redis) : IAuthenticationService
+        IRedisClient  _redis) : IAuthenticationService
     {
-        private readonly IDatabase _db = _redis.GetDatabase();
 
         // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -103,48 +102,30 @@ namespace Service
             return _mapper.Map<AddressDTO>(user.Address);
         }
 
-        // ── Forgot Password — Step 1: Send OTP ────────────────────────────────
-
         public async Task SendResetCodeAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email)
                 ?? throw new UserNotFoundException(email);
 
-            // Generate 6-digit OTP
             var otp = new Random().Next(100000, 999999).ToString();
-
-            // Store in Redis with 10-minute TTL
-            // Key: "otp:{email}" — one active OTP per email at a time
-            await _db.StringSetAsync(
-                $"otp:{email}",
-                otp,
-                TimeSpan.FromMinutes(10));
-
-            // Send email
+            await _redis.SetAsync($"otp:{email}", otp, TimeSpan.FromMinutes(10));
             await _emailService.SendOtpAsync(email, otp);
         }
 
-        // ── Forgot Password — Step 2: Verify OTP ─────────────────────────────
         public async Task<bool> VerifyResetCodeAsync(string email, string code)
         {
-            var stored = await _db.StringGetAsync($"otp:{email}");
-            if (stored.IsNullOrEmpty || stored.ToString() != code)
-                return false;
+            var stored = await _redis.GetAsync($"otp:{email}");
+            if (stored is null || stored != code) return false;
 
-            // الكود صحيح — نسجل إن الإيميل ده Verified لمدة 10 دقايق
-            await _db.StringSetAsync($"otp-verified:{email}", "true", TimeSpan.FromMinutes(10));
-
-            // نمسح الـ OTP نفسه — مينفعش يستخدم تاني
-            await _db.KeyDeleteAsync($"otp:{email}");
-
+            await _redis.SetAsync($"otp-verified:{email}", "true", TimeSpan.FromMinutes(10));
+            await _redis.DeleteAsync($"otp:{email}");
             return true;
         }
 
-        // ── Forgot Password — Step 3: Reset Password ──────────────────────────
         public async Task ResetPasswordAsync(ResetPasswordDTO dto)
         {
-            var verified = await _db.StringGetAsync($"otp-verified:{dto.Email}");
-            if (verified.IsNullOrEmpty || verified.ToString() != "true")
+            var verified = await _redis.GetAsync($"otp-verified:{dto.Email}");
+            if (verified != "true")
                 throw new BadRequestException(["Please verify your reset code first."]);
 
             var user = await _userManager.FindByEmailAsync(dto.Email)
@@ -156,7 +137,7 @@ namespace Service
             if (!result.Succeeded)
                 throw new BadRequestException(result.Errors.Select(e => e.Description).ToList());
 
-            await _db.KeyDeleteAsync($"otp-verified:{dto.Email}");
+            await _redis.DeleteAsync($"otp-verified:{dto.Email}");
         }
 
         // ── Token ─────────────────────────────────────────────────────────────
@@ -167,7 +148,8 @@ namespace Service
             {
                 new(ClaimTypes.NameIdentifier, user.Id!),
                 new(ClaimTypes.Email,          user.Email!),
-                new(ClaimTypes.Name,           user.UserName!)
+                new(ClaimTypes.Name,           user.UserName!),
+                new("DisplayName",             user.DisplayName)
             };
 
             var roles = await _userManager.GetRolesAsync(user);

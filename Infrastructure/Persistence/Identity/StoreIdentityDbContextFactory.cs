@@ -10,7 +10,7 @@ namespace Persistence.Identity
         {
             var optionsBuilder = new DbContextOptionsBuilder<StoreIdentityDbContext>();
             optionsBuilder.UseSqlServer(
-"Server=localhost;Database=ECommerce;Trusted_Connection=True;TrustServerCertificate=True"); 
+                "Server=SQL9001.site4now.net;Database=db_acab93_ecommerce;User Id=db_acab93_ecommerce_admin;Password=Eng@0111;Encrypt=True;TrustServerCertificate=True");
             return new StoreIdentityDbContext(optionsBuilder.Options);
         }
     }

@@ -1,28 +1,21 @@
 ﻿using DomainLayer.Contracts;
-using StackExchange.Redis;
+using Persistence.Caching;
 
 namespace Persistence.Repositories
 {
-    public class CacheRepository(IConnectionMultiplexer connection) : ICacheRepository
+    public class CacheRepository(IRedisClient redis) : ICacheRepository
     {
-        private readonly IDatabase _database = connection.GetDatabase();
-        private readonly IServer _server = connection.GetServer(
-            connection.GetEndPoints().First());
-
         public async Task<string?> GetAsync(string cacheKey)
-        {
-            var value = await _database.StringGetAsync(cacheKey);
-            return value.IsNullOrEmpty ? null : value.ToString();
-        }
+            => await redis.GetAsync(cacheKey);
 
         public async Task SetAsync(string cacheKey, string cacheValue, TimeSpan timeToLive)
-            => await _database.StringSetAsync(cacheKey, cacheValue, timeToLive);
+            => await redis.SetAsync(cacheKey, cacheValue, timeToLive);
 
         public async Task RemoveByPrefixAsync(string keyPrefix)
         {
-            var keys = _server.KeysAsync(pattern: $"{keyPrefix}*");
-            await foreach (var key in keys)
-                await _database.KeyDeleteAsync(key);
+            var keys = await redis.ScanKeysAsync($"{keyPrefix}*");
+            foreach (var key in keys)
+                await redis.DeleteAsync(key);
         }
     }
 }

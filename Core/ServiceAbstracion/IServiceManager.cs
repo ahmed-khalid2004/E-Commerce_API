@@ -11,5 +11,6 @@ namespace ServicesAbstraction
         IOrderService OrderService { get; }
         IPaymentService PaymentService { get; }
         ICategoryService CategoryService { get; }      // Phase 4 addition
+        IReviewService ReviewService { get; }
     }
 }

@@ -29,5 +29,8 @@ namespace Shared.DataTransferObjects.ProductModuleDTOs
         public int TypeId { get; set; }
 
         public List<int> CategoryIds { get; set; } = [];
+
+        [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
+        public decimal? Discount { get; set; }
     }
 }
