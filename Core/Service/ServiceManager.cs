@@ -36,7 +36,7 @@ namespace Services
         private readonly Lazy<ICategoryService> _lazyCategoryService = new(() => new CategoryService(unitOfWork, mapper));
         private readonly Lazy<IEmailService> _LazyEmailService = new(() => new EmailService(configuration));
         private readonly Lazy<IReviewService> _lazyReviewService = new(() => new ReviewService(unitOfWork, mapper));
-
+        private readonly Lazy<ICustomerService> _lazyCustomerService = new(() => new CustomerService(userManager, unitOfWork, mapper));
 
         public IProductService ProductService => _lazyProductService.Value;
         public IBasketService BasketService => _lazyBasketService.Value;
@@ -46,6 +46,7 @@ namespace Services
         public ICategoryService CategoryService => _lazyCategoryService.Value;
         public IEmailService EmailService => _LazyEmailService.Value;
         public IReviewService ReviewService => _lazyReviewService.Value;
+        public ICustomerService CustomerService => _lazyCustomerService.Value;
 
     }
 }
