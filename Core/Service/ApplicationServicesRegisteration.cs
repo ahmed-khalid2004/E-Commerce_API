@@ -50,6 +50,10 @@ namespace Service
             Services.AddScoped<Func<IReviewService>>(Provider =>
                 () => Provider.GetRequiredService<IReviewService>());
 
+            Services.AddScoped<ICustomerService, CustomerService>();
+            Services.AddScoped<Func<ICustomerService>>(Provider =>
+                () => Provider.GetRequiredService<ICustomerService>());
+
             return Services;
         }
     }
