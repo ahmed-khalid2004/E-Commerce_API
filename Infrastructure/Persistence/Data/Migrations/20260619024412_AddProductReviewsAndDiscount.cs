@@ -65,7 +65,7 @@ namespace Persistence.Data.Migrations
                 column: "ProductId");
         }
 
-        /// <inheritdoc />
+        ///// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

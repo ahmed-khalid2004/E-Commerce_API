@@ -8,8 +8,12 @@ namespace DomainLayer.Models.OrderModule
 {
     public enum OrderStatus
     {
-        pending = 0,
+        Pending = 0,
         PaymentReceived = 1,
-        PaymentFailed = 2
+        PaymentFailed = 2,
+        Confirmed = 3,
+        Shipped = 4,
+        Delivered = 5,
+        Cancelled = 6
     }
 }

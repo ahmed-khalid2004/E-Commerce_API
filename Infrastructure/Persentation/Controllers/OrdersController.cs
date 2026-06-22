@@ -28,5 +28,18 @@ namespace Presentation.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<OrderToReturnDTO>> GetOrderById(Guid id)
             => Ok(await _serviceManager.OrderService.GetOrderByIdAsync(id, GetEmailFromToken()));
+
+        // ── Admin ─────────────────────────────────────────────────────────────
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("all")]
+        public async Task<ActionResult<IReadOnlyList<OrderToReturnDTO>>> GetAllOrdersForAdmin()
+            => Ok(await _serviceManager.OrderService.GetAllOrdersForAdminAsync());
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id:guid}/status")]
+        public async Task<ActionResult<OrderToReturnDTO>> UpdateOrderStatus(
+            Guid id, [FromBody] UpdateOrderStatusDTO dto)
+            => Ok(await _serviceManager.OrderService.UpdateOrderStatusAsync(id, dto.Status));
     }
 }
