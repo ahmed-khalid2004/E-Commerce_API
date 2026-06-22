@@ -13,5 +13,6 @@ namespace ServicesAbstraction
         ICategoryService CategoryService { get; }
         IReviewService ReviewService { get; }
         ICustomerService CustomerService { get; }
+        IDashboardService DashboardService { get; }
     }
 }
