@@ -102,5 +102,30 @@ namespace Service
 
             return _mapper.Map<Order, OrderToReturnDTO>(order);
         }
+
+        // ── Admin ─────────────────────────────────────────────────────────────
+
+        public async Task<IReadOnlyList<OrderToReturnDTO>> GetAllOrdersForAdminAsync()
+        {
+            var spec = new OrderSpecifications();
+            var orders = await _unitOfWork.GetRepository<Order, Guid>().GetAllAsync(spec);
+            return _mapper.Map<IReadOnlyList<OrderToReturnDTO>>(orders);
+        }
+
+        public async Task<OrderToReturnDTO> UpdateOrderStatusAsync(Guid orderId, string newStatus)
+        {
+            if (!Enum.TryParse<OrderStatus>(newStatus, ignoreCase: true, out var status))
+                throw new BadRequestException([$"'{newStatus}' is not a valid order status."]);
+
+            var spec = new OrderSpecifications(orderId);
+            var order = await _unitOfWork.GetRepository<Order, Guid>().GetByIdAsync(spec)
+                ?? throw new OrderNotFoundException(orderId);
+
+            order.Status = status;
+            _unitOfWork.GetRepository<Order, Guid>().Update(order);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<Order, OrderToReturnDTO>(order);
+        }
     }
 }

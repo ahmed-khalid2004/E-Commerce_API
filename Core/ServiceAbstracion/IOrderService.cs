@@ -8,5 +8,9 @@ namespace ServiceAbstracion
         Task<IEnumerable<DeliveryMethodDTO>> GetDeliveryMethodsAsync();
         Task<IEnumerable<OrderToReturnDTO>> GetAllOrdersAsync(string email);
         Task<OrderToReturnDTO> GetOrderByIdAsync(Guid id, string email);
+
+        // Admin
+        Task<IReadOnlyList<OrderToReturnDTO>> GetAllOrdersForAdminAsync();
+        Task<OrderToReturnDTO> UpdateOrderStatusAsync(Guid orderId, string newStatus);
     }
 }
