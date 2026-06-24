@@ -10,7 +10,9 @@ namespace ServicesAbstraction
         IAuthenticationService AuthenticationService { get; }
         IOrderService OrderService { get; }
         IPaymentService PaymentService { get; }
-        ICategoryService CategoryService { get; }      // Phase 4 addition
+        ICategoryService CategoryService { get; }
         IReviewService ReviewService { get; }
+        ICustomerService CustomerService { get; }
+        IDashboardService DashboardService { get; }
     }
 }
