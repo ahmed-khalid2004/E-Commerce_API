@@ -16,31 +16,23 @@ namespace Persistence
         RoleManager<IdentityRole> _roleManager,
         StoreIdentityDbContext _identityDbContext) : IDataSeeding
     {
-        // ── FIXED: Use AppContext.BaseDirectory so it works on any server ─────
         private static string SeedPath(string fileName)
-            => Path.Combine(
-                AppContext.BaseDirectory,
-                "DataSeed",
-                fileName);
-
-        // ── Entry points ──────────────────────────────────────────────────────
+            => Path.Combine(AppContext.BaseDirectory, "DataSeed", fileName);
 
         public async Task DataSeedAsync()
         {
-            // Apply pending migrations for BOTH contexts against the same DB
             await ApplyPendingMigrationsAsync();
 
             await SeedBrandsAsync();
-            await SeedTypesAsync();
+            await SeedCategoriesAsync();        // ← لازم تيجي قبل SubCategories دلوقتي
+            await SeedSubCategoriesAsync();      // ← كانت SeedTypesAsync
             await SeedProductsAsync();
-            await SeedCategoriesAsync();
-            await SeedProductCategoriesAsync();
             await SeedDeliveryMethodsAsync();
+            // SeedProductCategoriesAsync اتشالت بالكامل — مفيش Many-to-Many تاني
         }
 
         public async Task IdentityDataSeedAsync()
         {
-            // Apply identity migrations
             var identityPending = await _identityDbContext.Database.GetPendingMigrationsAsync();
             if (identityPending.Any())
                 await _identityDbContext.Database.MigrateAsync();
@@ -49,8 +41,6 @@ namespace Persistence
             await SeedUsersAsync();
         }
 
-        // ── Phase 0 — Migrations ──────────────────────────────────────────────
-
         private async Task ApplyPendingMigrationsAsync()
         {
             var pending = await _dbContext.Database.GetPendingMigrationsAsync();
@@ -58,55 +48,68 @@ namespace Persistence
                 await _dbContext.Database.MigrateAsync();
         }
 
-        // ── Phase 1 — Brands ──────────────────────────────────────────────────
-
         private async Task SeedBrandsAsync()
         {
             var seedBrands = await DeserializeAsync<List<ProductBrand>>("brands.json");
             if (seedBrands is null || !seedBrands.Any()) return;
 
-            var existingNames = await _dbContext.ProductBrands
-                .Select(b => b.Name).ToHashSetAsync();
-
-            var toInsert = seedBrands
-                .Where(b => !existingNames.Contains(b.Name)).ToList();
+            var existingNames = await _dbContext.ProductBrands.Select(b => b.Name).ToHashSetAsync();
+            var toInsert = seedBrands.Where(b => !existingNames.Contains(b.Name)).ToList();
 
             if (!toInsert.Any()) return;
             await _dbContext.ProductBrands.AddRangeAsync(toInsert);
             await _dbContext.SaveChangesAsync();
         }
 
-        // ── Phase 2 — Types ───────────────────────────────────────────────────
-
-        private async Task SeedTypesAsync()
+        private async Task SeedCategoriesAsync()
         {
-            var seedTypes = await DeserializeAsync<List<ProductType>>("types.json");
-            if (seedTypes is null || !seedTypes.Any()) return;
+            var seedCategories = await DeserializeAsync<List<Category>>("categories.json");
+            if (seedCategories is null || !seedCategories.Any()) return;
 
-            var existingNames = await _dbContext.ProductTypes
-                .Select(t => t.Name).ToHashSetAsync();
-
-            var toInsert = seedTypes
-                .Where(t => !existingNames.Contains(t.Name)).ToList();
+            var existingNames = await _dbContext.Categories.Select(c => c.Name).ToHashSetAsync();
+            var toInsert = seedCategories.Where(c => !existingNames.Contains(c.Name)).ToList();
 
             if (!toInsert.Any()) return;
-            await _dbContext.ProductTypes.AddRangeAsync(toInsert);
+            await _dbContext.Categories.AddRangeAsync(toInsert);
             await _dbContext.SaveChangesAsync();
         }
 
-        // ── Phase 3 — Products ────────────────────────────────────────────────
+        // ── Was SeedTypesAsync — now resolves CategoryId from CategoryName ────
+        private async Task SeedSubCategoriesAsync()
+        {
+            var seedSubCategories = await DeserializeAsync<List<SubCategorySeedDto>>("subcategories.json");
+            if (seedSubCategories is null || !seedSubCategories.Any()) return;
+
+            var categoriesByName = await _dbContext.Categories
+                .ToDictionaryAsync(c => c.Name, c => c.Id);
+            var existingNames = await _dbContext.SubCategories
+                .Select(s => s.Name).ToHashSetAsync();
+
+            var toInsert = new List<SubCategory>();
+            foreach (var dto in seedSubCategories)
+            {
+                if (existingNames.Contains(dto.Name)) continue;
+
+                if (!categoriesByName.TryGetValue(dto.CategoryName, out var categoryId))
+                    throw new InvalidOperationException(
+                        $"Seed error: Category '{dto.CategoryName}' not found for subcategory '{dto.Name}'.");
+
+                toInsert.Add(new SubCategory { Name = dto.Name, CategoryId = categoryId });
+            }
+
+            if (!toInsert.Any()) return;
+            await _dbContext.SubCategories.AddRangeAsync(toInsert);
+            await _dbContext.SaveChangesAsync();
+        }
 
         private async Task SeedProductsAsync()
         {
             var seedDtos = await DeserializeAsync<List<ProductSeedDto>>("products.json");
             if (seedDtos is null || !seedDtos.Any()) return;
 
-            var brandsByName = await _dbContext.ProductBrands
-                .ToDictionaryAsync(b => b.Name, b => b.Id);
-            var typesByName = await _dbContext.ProductTypes
-                .ToDictionaryAsync(t => t.Name, t => t.Id);
-            var existingNames = await _dbContext.Products
-                .Select(p => p.Name).ToHashSetAsync();
+            var brandsByName = await _dbContext.ProductBrands.ToDictionaryAsync(b => b.Name, b => b.Id);
+            var subCategoriesByName = await _dbContext.SubCategories.ToDictionaryAsync(s => s.Name, s => s.Id);
+            var existingNames = await _dbContext.Products.Select(p => p.Name).ToHashSetAsync();
 
             var toInsert = new List<Product>();
             foreach (var dto in seedDtos)
@@ -114,12 +117,10 @@ namespace Persistence
                 if (existingNames.Contains(dto.Name)) continue;
 
                 if (!brandsByName.TryGetValue(dto.BrandName, out var brandId))
-                    throw new InvalidOperationException(
-                        $"Seed error: Brand '{dto.BrandName}' not found for product '{dto.Name}'.");
+                    throw new InvalidOperationException($"Seed error: Brand '{dto.BrandName}' not found for product '{dto.Name}'.");
 
-                if (!typesByName.TryGetValue(dto.TypeName, out var typeId))
-                    throw new InvalidOperationException(
-                        $"Seed error: Type '{dto.TypeName}' not found for product '{dto.Name}'.");
+                if (!subCategoriesByName.TryGetValue(dto.SubCategoryName, out var subCategoryId))
+                    throw new InvalidOperationException($"Seed error: SubCategory '{dto.SubCategoryName}' not found for product '{dto.Name}'.");
 
                 toInsert.Add(new Product
                 {
@@ -128,7 +129,7 @@ namespace Persistence
                     PictureUrl = dto.PictureUrl,
                     Price = dto.Price,
                     BrandId = brandId,
-                    TypeId = typeId
+                    SubCategoryId = subCategoryId
                 });
             }
 
@@ -137,84 +138,18 @@ namespace Persistence
             await _dbContext.SaveChangesAsync();
         }
 
-        // ── Phase 4 — Categories ──────────────────────────────────────────────
-
-        private async Task SeedCategoriesAsync()
-        {
-            var seedCategories = await DeserializeAsync<List<Category>>("categories.json");
-            if (seedCategories is null || !seedCategories.Any()) return;
-
-            var existingNames = await _dbContext.Categories
-                .Select(c => c.Name).ToHashSetAsync();
-
-            var toInsert = seedCategories
-                .Where(c => !existingNames.Contains(c.Name)).ToList();
-
-            if (!toInsert.Any()) return;
-            await _dbContext.Categories.AddRangeAsync(toInsert);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        // ── Phase 5 — ProductCategories ───────────────────────────────────────
-
-        private async Task SeedProductCategoriesAsync()
-        {
-            var seedLinks = await DeserializeAsync<List<ProductCategorySeedDto>>("product_categories.json");
-            if (seedLinks is null || !seedLinks.Any()) return;
-
-            var productIdByName = await _dbContext.Products
-                .ToDictionaryAsync(p => p.Name, p => p.Id);
-            var categoryIdByName = await _dbContext.Categories
-                .ToDictionaryAsync(c => c.Name, c => c.Id);
-
-            var existingPairSet = (await _dbContext.ProductCategories
-                .Select(pc => new { pc.ProductId, pc.CategoryId })
-                .ToListAsync())
-                .Select(pc => (pc.ProductId, pc.CategoryId))
-                .ToHashSet();
-
-            var toInsert = new List<ProductCategory>();
-            foreach (var link in seedLinks)
-            {
-                if (!productIdByName.TryGetValue(link.ProductName, out var productId))
-                    throw new InvalidOperationException(
-                        $"Seed error: Product '{link.ProductName}' not found.");
-
-                if (!categoryIdByName.TryGetValue(link.CategoryName, out var categoryId))
-                    throw new InvalidOperationException(
-                        $"Seed error: Category '{link.CategoryName}' not found.");
-
-                var pair = (productId, categoryId);
-                if (existingPairSet.Contains(pair)) continue;
-
-                toInsert.Add(new ProductCategory { ProductId = productId, CategoryId = categoryId });
-                existingPairSet.Add(pair);
-            }
-
-            if (!toInsert.Any()) return;
-            await _dbContext.ProductCategories.AddRangeAsync(toInsert);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        // ── Phase 6 — DeliveryMethods ─────────────────────────────────────────
-
         private async Task SeedDeliveryMethodsAsync()
         {
             var seedMethods = await DeserializeAsync<List<DeliveryMethod>>("delivery.json");
             if (seedMethods is null || !seedMethods.Any()) return;
 
-            var existingNames = await _dbContext.DeliveryMethods
-                .Select(d => d.ShortName).ToHashSetAsync();
-
-            var toInsert = seedMethods
-                .Where(d => !existingNames.Contains(d.ShortName)).ToList();
+            var existingNames = await _dbContext.DeliveryMethods.Select(d => d.ShortName).ToHashSetAsync();
+            var toInsert = seedMethods.Where(d => !existingNames.Contains(d.ShortName)).ToList();
 
             if (!toInsert.Any()) return;
             await _dbContext.DeliveryMethods.AddRangeAsync(toInsert);
             await _dbContext.SaveChangesAsync();
         }
-
-        // ── Identity seeding ──────────────────────────────────────────────────
 
         private async Task SeedRolesAsync()
         {
@@ -255,8 +190,6 @@ namespace Persistence
                         string.Join(", ", result.Errors.Select(e => e.Description)));
             }
         }
-
-        // ── Helpers ───────────────────────────────────────────────────────────
 
         private static async Task<T?> DeserializeAsync<T>(string fileName)
         {

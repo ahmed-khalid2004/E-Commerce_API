@@ -1,42 +1,34 @@
 [
   {
-    "Name": "Grilled",
-    "Description": "Dishes primarily prepared on a grill or with grilled ingredients."
+    "Name": "Electronics & Mobiles",
+    "Description": "Smartphones, laptops, and tech accessories."
   },
   {
-    "Name": "Vegetarian",
-    "Description": "Meat-free dishes suitable for vegetarians."
+    "Name": "Fashion & Clothing",
+    "Description": "Men's and women's clothing, shoes, and bags."
   },
   {
-    "Name": "Pasta",
-    "Description": "Dishes featuring pasta as the main ingredient."
+    "Name": "Home & Kitchen",
+    "Description": "Appliances and decor for the modern home."
   },
   {
-    "Name": "Soup",
-    "Description": "Hot or cold soup-based dishes."
+    "Name": "Groceries & Food",
+    "Description": "Dairy, snacks, frozen foods, and pantry staples."
   },
   {
-    "Name": "Noodles",
-    "Description": "Asian or European noodle-based dishes."
+    "Name": "Beauty & Personal Care",
+    "Description": "Skincare, haircare, and fragrances."
   },
   {
-    "Name": "Seafood",
-    "Description": "Dishes featuring fish, shrimp, or other seafood."
+    "Name": "Sports & Outdoors",
+    "Description": "Sportswear and fitness equipment."
   },
   {
-    "Name": "Dessert",
-    "Description": "Sweet dishes and frozen treats."
+    "Name": "Books & Stationery",
+    "Description": "Books and school or office supplies."
   },
   {
-    "Name": "Rice",
-    "Description": "Dishes where rice is a primary component."
-  },
-  {
-    "Name": "Curry",
-    "Description": "Spiced sauce-based dishes from Indian or Asian cuisines."
-  },
-  {
-    "Name": "Snack",
-    "Description": "Light bites and appetizers."
+    "Name": "Baby & Kids",
+    "Description": "Baby care essentials and toys."
   }
 ]

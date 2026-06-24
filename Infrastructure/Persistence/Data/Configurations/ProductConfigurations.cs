@@ -1,13 +1,6 @@
 using DomainLayer.Models.ProductModule;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Persistence.Data.Configurations
 {
@@ -15,20 +8,20 @@ namespace Persistence.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
-            builder.HasOne(P => P.ProductBrand)
+            builder.HasOne(p => p.ProductBrand)
                    .WithMany(b => b.Products)
-                   .HasForeignKey(P => P.BrandId);
+                   .HasForeignKey(p => p.BrandId);
 
-            builder.HasOne(P => P.ProductType)
-             .WithMany()
-             .HasForeignKey(P => P.TypeId);
+            // Was ProductType — now SubCategory
+            builder.HasOne(p => p.SubCategory)
+                   .WithMany(s => s.Products)
+                   .HasForeignKey(p => p.SubCategoryId);
 
-            builder.Property(P => P.Price)
-             .HasColumnType("decimal(10,2)");
+            builder.Property(p => p.Price)
+                   .HasColumnType("decimal(10,2)");
 
-            builder.Property(P => P.Discount)        
-         .HasColumnType("decimal(5,2)");
+            builder.Property(p => p.Discount)
+                   .HasColumnType("decimal(5,2)");
         }
     }
 }
-

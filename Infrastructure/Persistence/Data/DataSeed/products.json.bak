@@ -1,0 +1,337 @@
+[
+  {
+    "Name": "Samsung Galaxy A55 5G",
+    "Description": "Mid-range smartphone with 5G support, 8GB RAM, and a 50MP camera.",
+    "Price": 14999,
+    "PictureUrl": "https://placehold.co/400x400?text=Galaxy+A55",
+    "SubCategoryName": "Smartphones",
+    "BrandName": "Samsung"
+  },
+  {
+    "Name": "Xiaomi Redmi Note 13",
+    "Description": "Affordable smartphone with a 108MP camera and 5000mAh battery.",
+    "Price": 8999,
+    "PictureUrl": "https://placehold.co/400x400?text=Redmi+Note+13",
+    "SubCategoryName": "Smartphones",
+    "BrandName": "Xiaomi"
+  },
+  {
+    "Name": "Apple iPhone 15",
+    "Description": "Apple's iPhone 15 with A16 Bionic chip and a dual camera system.",
+    "Price": 42999,
+    "PictureUrl": "https://placehold.co/400x400?text=iPhone+15",
+    "SubCategoryName": "Smartphones",
+    "BrandName": "Apple"
+  },
+  {
+    "Name": "Oppo Reno 11",
+    "Description": "Sleek smartphone with fast charging and a vivid AMOLED display.",
+    "Price": 16999,
+    "PictureUrl": "https://placehold.co/400x400?text=Oppo+Reno+11",
+    "SubCategoryName": "Smartphones",
+    "BrandName": "Oppo"
+  },
+  {
+    "Name": "Samsung Galaxy Book3",
+    "Description": "Lightweight laptop with Intel Core i5 and a vivid AMOLED display.",
+    "Price": 32999,
+    "PictureUrl": "https://placehold.co/400x400?text=Galaxy+Book3",
+    "SubCategoryName": "Laptops & Computers",
+    "BrandName": "Samsung"
+  },
+  {
+    "Name": "Xiaomi Redmi Pad",
+    "Description": "Affordable tablet ideal for streaming and browsing.",
+    "Price": 6999,
+    "PictureUrl": "https://placehold.co/400x400?text=Redmi+Pad",
+    "SubCategoryName": "Laptops & Computers",
+    "BrandName": "Xiaomi"
+  },
+  {
+    "Name": "Apple AirPods Pro 2",
+    "Description": "Wireless earbuds with active noise cancellation.",
+    "Price": 8999,
+    "PictureUrl": "https://placehold.co/400x400?text=AirPods+Pro+2",
+    "SubCategoryName": "Mobile Accessories",
+    "BrandName": "Apple"
+  },
+  {
+    "Name": "Samsung 25W Fast Charger",
+    "Description": "Original fast charger compatible with Samsung Galaxy devices.",
+    "Price": 599,
+    "PictureUrl": "https://placehold.co/400x400?text=Fast+Charger",
+    "SubCategoryName": "Mobile Accessories",
+    "BrandName": "Samsung"
+  },
+
+  {
+    "Name": "Cottonil Men's Cotton Boxer Set (3-Pack)",
+    "Description": "Comfortable 100% cotton boxers, pack of three.",
+    "Price": 299,
+    "PictureUrl": "https://placehold.co/400x400?text=Boxer+Set",
+    "SubCategoryName": "Men's Clothing",
+    "BrandName": "Cottonil"
+  },
+  {
+    "Name": "Mobaco Men's Casual Shirt",
+    "Description": "Slim-fit cotton shirt suitable for casual or semi-formal wear.",
+    "Price": 650,
+    "PictureUrl": "https://placehold.co/400x400?text=Casual+Shirt",
+    "SubCategoryName": "Men's Clothing",
+    "BrandName": "Mobaco"
+  },
+  {
+    "Name": "Concrete Women's Summer Dress",
+    "Description": "Lightweight floral summer dress, perfect for warm days.",
+    "Price": 850,
+    "PictureUrl": "https://placehold.co/400x400?text=Summer+Dress",
+    "SubCategoryName": "Women's Clothing",
+    "BrandName": "Concrete"
+  },
+  {
+    "Name": "LC Waikiki Women's Denim Jacket",
+    "Description": "Classic denim jacket with a modern fit.",
+    "Price": 1199,
+    "PictureUrl": "https://placehold.co/400x400?text=Denim+Jacket",
+    "SubCategoryName": "Women's Clothing",
+    "BrandName": "LC Waikiki"
+  },
+  {
+    "Name": "LC Waikiki Kids Sneakers",
+    "Description": "Comfortable sneakers for everyday wear, designed for kids.",
+    "Price": 549,
+    "PictureUrl": "https://placehold.co/400x400?text=Kids+Sneakers",
+    "SubCategoryName": "Shoes & Bags",
+    "BrandName": "LC Waikiki"
+  },
+  {
+    "Name": "Mobaco Leather Crossbody Bag",
+    "Description": "Genuine leather crossbody bag with an adjustable strap.",
+    "Price": 799,
+    "PictureUrl": "https://placehold.co/400x400?text=Crossbody+Bag",
+    "SubCategoryName": "Shoes & Bags",
+    "BrandName": "Mobaco"
+  },
+
+  {
+    "Name": "Kiriazi Refrigerator 18 ft",
+    "Description": "Spacious no-frost refrigerator with energy-saving technology.",
+    "Price": 24999,
+    "PictureUrl": "https://placehold.co/400x400?text=Refrigerator",
+    "SubCategoryName": "Kitchen Appliances",
+    "BrandName": "Kiriazi"
+  },
+  {
+    "Name": "Fresh Microwave Oven 25L",
+    "Description": "25-liter microwave with grill function and digital display.",
+    "Price": 3499,
+    "PictureUrl": "https://placehold.co/400x400?text=Microwave+Oven",
+    "SubCategoryName": "Kitchen Appliances",
+    "BrandName": "Fresh"
+  },
+  {
+    "Name": "Tefal Non-Stick Frying Pan 28cm",
+    "Description": "Durable non-stick frying pan suitable for all stovetops.",
+    "Price": 599,
+    "PictureUrl": "https://placehold.co/400x400?text=Frying+Pan",
+    "SubCategoryName": "Kitchen Appliances",
+    "BrandName": "Tefal"
+  },
+  {
+    "Name": "Tefal Electric Kettle 1.7L",
+    "Description": "Fast-boil electric kettle with auto shut-off feature.",
+    "Price": 799,
+    "PictureUrl": "https://placehold.co/400x400?text=Electric+Kettle",
+    "SubCategoryName": "Kitchen Appliances",
+    "BrandName": "Tefal"
+  },
+  {
+    "Name": "Fresh Decorative Cushion Set",
+    "Description": "Set of two decorative cushions for living room sofas.",
+    "Price": 350,
+    "PictureUrl": "https://placehold.co/400x400?text=Cushion+Set",
+    "SubCategoryName": "Home Decor",
+    "BrandName": "Fresh"
+  },
+  {
+    "Name": "Kiriazi LED Ceiling Lamp",
+    "Description": "Modern LED ceiling lamp with adjustable brightness.",
+    "Price": 599,
+    "PictureUrl": "https://placehold.co/400x400?text=Ceiling+Lamp",
+    "SubCategoryName": "Home Decor",
+    "BrandName": "Kiriazi"
+  },
+
+  {
+    "Name": "Juhayna Full Cream Milk 1L",
+    "Description": "Fresh full cream milk, pasteurized and rich in calcium.",
+    "Price": 45,
+    "PictureUrl": "https://placehold.co/400x400?text=Full+Cream+Milk",
+    "SubCategoryName": "Dairy & Cheese",
+    "BrandName": "Juhayna"
+  },
+  {
+    "Name": "Domty Feta Cheese 500g",
+    "Description": "Creamy feta cheese made from fresh cow's milk.",
+    "Price": 95,
+    "PictureUrl": "https://placehold.co/400x400?text=Feta+Cheese",
+    "SubCategoryName": "Dairy & Cheese",
+    "BrandName": "Domty"
+  },
+  {
+    "Name": "Domty Greek Yogurt 4-Pack",
+    "Description": "Thick and creamy Greek yogurt, pack of four cups.",
+    "Price": 60,
+    "PictureUrl": "https://placehold.co/400x400?text=Greek+Yogurt",
+    "SubCategoryName": "Dairy & Cheese",
+    "BrandName": "Domty"
+  },
+  {
+    "Name": "Edita Twinkies Cake (6-Pack)",
+    "Description": "Soft sponge cakes filled with creamy filling, pack of six.",
+    "Price": 35,
+    "PictureUrl": "https://placehold.co/400x400?text=Twinkies",
+    "SubCategoryName": "Snacks & Sweets",
+    "BrandName": "Edita"
+  },
+  {
+    "Name": "Edita Bake Rolz Pretzel",
+    "Description": "Crunchy pretzel snack rolls, lightly salted.",
+    "Price": 15,
+    "PictureUrl": "https://placehold.co/400x400?text=Bake+Rolz",
+    "SubCategoryName": "Snacks & Sweets",
+    "BrandName": "Edita"
+  },
+  {
+    "Name": "Americana Chicken Nuggets 400g",
+    "Description": "Crispy breaded chicken nuggets, ready to fry or bake.",
+    "Price": 110,
+    "PictureUrl": "https://placehold.co/400x400?text=Chicken+Nuggets",
+    "SubCategoryName": "Frozen Foods",
+    "BrandName": "Americana"
+  },
+  {
+    "Name": "Americana Beef Burger 8-Pack",
+    "Description": "Juicy beef burger patties, pack of eight.",
+    "Price": 145,
+    "PictureUrl": "https://placehold.co/400x400?text=Beef+Burger",
+    "SubCategoryName": "Frozen Foods",
+    "BrandName": "Americana"
+  },
+  {
+    "Name": "Juhayna Mango Juice 1L",
+    "Description": "Refreshing mango juice made from real fruit.",
+    "Price": 40,
+    "PictureUrl": "https://placehold.co/400x400?text=Mango+Juice",
+    "SubCategoryName": "Pantry Staples",
+    "BrandName": "Juhayna"
+  },
+
+  {
+    "Name": "Nivea Body Lotion 400ml",
+    "Description": "Moisturizing body lotion for soft, smooth skin.",
+    "Price": 220,
+    "PictureUrl": "https://placehold.co/400x400?text=Body+Lotion",
+    "SubCategoryName": "Skincare",
+    "BrandName": "Nivea"
+  },
+  {
+    "Name": "Nivea Men Face Wash",
+    "Description": "Deep-cleansing face wash designed for men's skin.",
+    "Price": 130,
+    "PictureUrl": "https://placehold.co/400x400?text=Face+Wash",
+    "SubCategoryName": "Skincare",
+    "BrandName": "Nivea"
+  },
+  {
+    "Name": "Nivea Argan Oil Shampoo",
+    "Description": "Nourishing shampoo enriched with argan oil for shiny hair.",
+    "Price": 95,
+    "PictureUrl": "https://placehold.co/400x400?text=Argan+Shampoo",
+    "SubCategoryName": "Haircare",
+    "BrandName": "Nivea"
+  },
+  {
+    "Name": "Nivea Roll-On Deodorant",
+    "Description": "Long-lasting roll-on deodorant with a fresh scent.",
+    "Price": 75,
+    "PictureUrl": "https://placehold.co/400x400?text=Deodorant",
+    "SubCategoryName": "Fragrances",
+    "BrandName": "Nivea"
+  },
+
+  {
+    "Name": "Adidas Running Shoes",
+    "Description": "Lightweight running shoes with a breathable mesh upper.",
+    "Price": 2499,
+    "PictureUrl": "https://placehold.co/400x400?text=Running+Shoes",
+    "SubCategoryName": "Sportswear",
+    "BrandName": "Adidas"
+  },
+  {
+    "Name": "Adidas Training T-Shirt",
+    "Description": "Moisture-wicking training t-shirt for everyday workouts.",
+    "Price": 699,
+    "PictureUrl": "https://placehold.co/400x400?text=Training+Tee",
+    "SubCategoryName": "Sportswear",
+    "BrandName": "Adidas"
+  },
+  {
+    "Name": "Adidas Yoga Mat",
+    "Description": "Non-slip yoga mat suitable for all types of exercise.",
+    "Price": 899,
+    "PictureUrl": "https://placehold.co/400x400?text=Yoga+Mat",
+    "SubCategoryName": "Fitness Equipment",
+    "BrandName": "Adidas"
+  },
+  {
+    "Name": "Adidas Adjustable Dumbbell Set",
+    "Description": "Adjustable dumbbell set ideal for home workouts.",
+    "Price": 1899,
+    "PictureUrl": "https://placehold.co/400x400?text=Dumbbell+Set",
+    "SubCategoryName": "Fitness Equipment",
+    "BrandName": "Adidas"
+  },
+
+  {
+    "Name": "Nahdet Misr Arabic Storybook Set",
+    "Description": "Collection of illustrated Arabic storybooks for children.",
+    "Price": 250,
+    "PictureUrl": "https://placehold.co/400x400?text=Storybook+Set",
+    "SubCategoryName": "Books",
+    "BrandName": "Fine Baby"
+  },
+  {
+    "Name": "Nahdet Misr Notebook Set (5-Pack)",
+    "Description": "Set of five lined notebooks for school or office use.",
+    "Price": 90,
+    "PictureUrl": "https://placehold.co/400x400?text=Notebook+Set",
+    "SubCategoryName": "School & Office Supplies",
+    "BrandName": "Fine Baby"
+  },
+
+  {
+    "Name": "Fine Baby Diapers Size 4 (Jumbo Pack)",
+    "Description": "Soft and absorbent diapers, jumbo pack size 4.",
+    "Price": 280,
+    "PictureUrl": "https://placehold.co/400x400?text=Diapers",
+    "SubCategoryName": "Baby Care",
+    "BrandName": "Fine Baby"
+  },
+  {
+    "Name": "Fine Baby Wet Wipes (Pack of 3)",
+    "Description": "Gentle baby wipes, fragrance-free, pack of three.",
+    "Price": 110,
+    "PictureUrl": "https://placehold.co/400x400?text=Wet+Wipes",
+    "SubCategoryName": "Baby Care",
+    "BrandName": "Fine Baby"
+  },
+  {
+    "Name": "Fine Baby Building Blocks Toy Set",
+    "Description": "Colorful building blocks set to boost creativity in toddlers.",
+    "Price": 320,
+    "PictureUrl": "https://placehold.co/400x400?text=Building+Blocks",
+    "SubCategoryName": "Toys",
+    "BrandName": "Fine Baby"
+  }
+]

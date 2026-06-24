@@ -14,38 +14,33 @@ namespace Service.MappingProfiles
             CreateMap<Product, ProductDTO>()
                 .ForMember(dest => dest.ProductBrand,
                            opt => opt.MapFrom(src => src.ProductBrand.Name))
-                .ForMember(dest => dest.ProductType,
-                           opt => opt.MapFrom(src => src.ProductType.Name))
                 .ForMember(dest => dest.PictureUrl,
                            opt => opt.MapFrom<PictureUrlResolver>())
-                .ForMember(dest => dest.Categories,
-                           opt => opt.MapFrom(src =>
-                               src.ProductCategories != null
-                                   ? src.ProductCategories
-                                         .Where(pc => pc.Category != null)
-                                         .Select(pc => pc.Category.Name)
-                                         .ToList()
-                                   : new List<string>()));
+                .ForMember(dest => dest.SubCategory,
+                           opt => opt.MapFrom(src => src.SubCategory.Name))
+                .ForMember(dest => dest.CategoryId,
+                           opt => opt.MapFrom(src => src.SubCategory.CategoryId))
+                .ForMember(dest => dest.CategoryName,
+                           opt => opt.MapFrom(src => src.SubCategory.Category.Name));
 
-            // ── CreateProductDTO → Product ────────────────────────────────────
-            // CategoryIds handled manually in service (join table)
-            CreateMap<CreateProductDTO, Product>()
-                .ForMember(dest => dest.ProductCategories, opt => opt.Ignore());
-
-            // ── UpdateProductDTO → Product ────────────────────────────────────
-            CreateMap<UpdateProductDTO, Product>()
-                .ForMember(dest => dest.ProductCategories, opt => opt.Ignore());
+            // ── CreateProductDTO / UpdateProductDTO → Product ─────────────────
+            CreateMap<CreateProductDTO, Product>();
+            CreateMap<UpdateProductDTO, Product>();
 
             // ── Brand ─────────────────────────────────────────────────────────
             CreateMap<ProductBrand, BrandDTO>();
             CreateMap<CreateBrandDTO, ProductBrand>();
 
-            // ── Type ──────────────────────────────────────────────────────────
-            CreateMap<ProductType, TypeDTO>();
-            CreateMap<CreateTypeDTO, ProductType>();
+            // ── SubCategory (was ProductType) ─────────────────────────────────
+            CreateMap<SubCategory, SubCategoryDTO>();
+            CreateMap<CreateSubCategoryDTO, SubCategory>();
 
+            // ── Category — includes nested SubCategories ──────────────────────
+            CreateMap<Category, CategoryDTO>();
+            CreateMap<CreateCategoryDTO, Category>();
+
+            // ── Reviews (unchanged) ────────────────────────────────────────────
             CreateMap<ProductReview, ProductReviewDTO>();
-
         }
     }
 }

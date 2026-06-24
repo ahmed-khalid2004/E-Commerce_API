@@ -1,20 +1,20 @@
 [
-  {
-    "Name": "Chicken"
-  },
-  {
-    "Name": "Seafood"
-  },
-  {
-    "Name": "Pasta and Noodles"
-  },
-  {
-    "Name": "Soup"
-  },
-  {
-    "Name": "Desserts"
-  },
-  {
-    "Name": "Vegetable"
-  }
+  { "Name": "Samsung" },
+  { "Name": "Xiaomi" },
+  { "Name": "Apple" },
+  { "Name": "Oppo" },
+  { "Name": "Cottonil" },
+  { "Name": "Mobaco" },
+  { "Name": "Concrete" },
+  { "Name": "LC Waikiki" },
+  { "Name": "Kiriazi" },
+  { "Name": "Fresh" },
+  { "Name": "Tefal" },
+  { "Name": "Juhayna" },
+  { "Name": "Edita" },
+  { "Name": "Domty" },
+  { "Name": "Americana" },
+  { "Name": "Nivea" },
+  { "Name": "Adidas" },
+  { "Name": "Fine Baby" }
 ]

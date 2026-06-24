@@ -19,18 +19,18 @@ namespace Shared.DataTransferObjects.ProductModuleDTOs
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
 
-        [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
+        [Range(0, 100)]
+        public decimal Discount { get; set; } = 0;
+
+        [Range(0, int.MaxValue)]
         public int StockQuantity { get; set; } = 0;
 
         [Required]
         public int BrandId { get; set; }
 
+        // Was TypeId — Product now points directly at a SubCategory,
+        // which already carries its own CategoryId.
         [Required]
-        public int TypeId { get; set; }
-
-        public List<int> CategoryIds { get; set; } = [];
-
-        [Range(0, 100, ErrorMessage = "Discount must be between 0 and 100")]
-        public decimal? Discount { get; set; }
+        public int SubCategoryId { get; set; }
     }
 }

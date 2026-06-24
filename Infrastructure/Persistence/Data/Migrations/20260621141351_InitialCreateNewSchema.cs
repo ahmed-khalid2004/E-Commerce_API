@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class FixSchemas : Migration
+    public partial class InitialCreateNewSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,17 +61,25 @@ namespace Persistence.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductTypes",
+                name: "SubCategories",
                 schema: "dbo",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductTypes", x => x.Id);
+                    table.PrimaryKey("PK_SubCategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SubCategories_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalSchema: "dbo",
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -115,8 +123,10 @@ namespace Persistence.Data.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    Discount = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
                     BrandId = table.Column<int>(type: "int", nullable: false),
-                    TypeId = table.Column<int>(type: "int", nullable: false)
+                    SubCategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -129,10 +139,10 @@ namespace Persistence.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Products_ProductTypes_TypeId",
-                        column: x => x.TypeId,
+                        name: "FK_Products_SubCategories_SubCategoryId",
+                        column: x => x.SubCategoryId,
                         principalSchema: "dbo",
-                        principalTable: "ProductTypes",
+                        principalTable: "SubCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -164,30 +174,37 @@ namespace Persistence.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductCategories",
+                name: "ProductReview",
                 schema: "dbo",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserDisplayName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Rating = table.Column<int>(type: "int", nullable: true),
+                    ParentReviewId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductCategories", x => new { x.ProductId, x.CategoryId });
+                    table.PrimaryKey("PK_ProductReview", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductCategories_Categories_CategoryId",
-                        column: x => x.CategoryId,
+                        name: "FK_ProductReview_ProductReview_ParentReviewId",
+                        column: x => x.ParentReviewId,
                         principalSchema: "dbo",
-                        principalTable: "Categories",
+                        principalTable: "ProductReview",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ProductCategories_Products_ProductId",
+                        name: "FK_ProductReview_Products_ProductId",
                         column: x => x.ProductId,
                         principalSchema: "dbo",
                         principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -210,10 +227,16 @@ namespace Persistence.Data.Migrations
                 column: "DeliveryMethodId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductCategories_CategoryId",
+                name: "IX_ProductReview_ParentReviewId",
                 schema: "dbo",
-                table: "ProductCategories",
-                column: "CategoryId");
+                table: "ProductReview",
+                column: "ParentReviewId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductReview_ProductId",
+                schema: "dbo",
+                table: "ProductReview",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
@@ -222,10 +245,23 @@ namespace Persistence.Data.Migrations
                 column: "BrandId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_TypeId",
+                name: "IX_Products_SubCategoryId",
                 schema: "dbo",
                 table: "Products",
-                column: "TypeId");
+                column: "SubCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SubCategories_CategoryId",
+                schema: "dbo",
+                table: "SubCategories",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SubCategories_CategoryId_Name",
+                schema: "dbo",
+                table: "SubCategories",
+                columns: new[] { "CategoryId", "Name" },
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -236,15 +272,11 @@ namespace Persistence.Data.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
-                name: "ProductCategories",
+                name: "ProductReview",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
                 name: "Orders",
-                schema: "dbo");
-
-            migrationBuilder.DropTable(
-                name: "Categories",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
@@ -260,7 +292,11 @@ namespace Persistence.Data.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
-                name: "ProductTypes",
+                name: "SubCategories",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "Categories",
                 schema: "dbo");
         }
     }

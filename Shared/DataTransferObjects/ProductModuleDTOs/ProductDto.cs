@@ -7,14 +7,16 @@
         public string Description { get; set; } = string.Empty;
         public string PictureUrl { get; set; } = string.Empty;
         public decimal Price { get; set; }
+        public decimal Discount { get; set; }
         public int StockQuantity { get; set; }
         public bool InStock => StockQuantity > 0;
+
         public string ProductBrand { get; set; } = string.Empty;
-        public string ProductType { get; set; } = string.Empty;
-        public List<string> Categories { get; set; } = [];
-        public decimal? Discount { get; set; }
-        public decimal FinalPrice => Discount.HasValue && Discount > 0
-            ? Math.Round(Price - (Price * Discount.Value / 100), 2)
-            : Price;
+
+        // Was ProductType — now SubCategory, with its parent CategoryId/CategoryName
+        // so the frontend can build breadcrumbs without an extra call.
+        public string SubCategory { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
     }
 }

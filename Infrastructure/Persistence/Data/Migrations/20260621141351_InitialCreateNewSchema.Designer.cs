@@ -12,8 +12,8 @@ using Persistence.Data;
 namespace Persistence.Data.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20260619025053_AddDiscountPrecision")]
-    partial class AddDiscountPrecision
+    [Migration("20260621141351_InitialCreateNewSchema")]
+    partial class InitialCreateNewSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -155,7 +155,7 @@ namespace Persistence.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("Discount")
+                    b.Property<decimal>("Discount")
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<string>("Name")
@@ -172,14 +172,14 @@ namespace Persistence.Data.Migrations
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("TypeId")
+                    b.Property<int>("SubCategoryId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BrandId");
 
-                    b.HasIndex("TypeId");
+                    b.HasIndex("SubCategoryId");
 
                     b.ToTable("Products", "dbo");
                 });
@@ -199,22 +199,6 @@ namespace Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductBrands", "dbo");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductCategory", b =>
-                {
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProductId", "CategoryId");
-
-                    b.HasIndex("CategoryId")
-                        .HasDatabaseName("IX_ProductCategories_CategoryId");
-
-                    b.ToTable("ProductCategories", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductReview", b =>
@@ -260,7 +244,7 @@ namespace Persistence.Data.Migrations
                     b.ToTable("ProductReview", "dbo");
                 });
 
-            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductType", b =>
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.SubCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -268,13 +252,24 @@ namespace Persistence.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductTypes", "dbo");
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("IX_SubCategories_CategoryId");
+
+                    b.HasIndex("CategoryId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_SubCategories_CategoryId_Name");
+
+                    b.ToTable("SubCategories", "dbo");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.OrderModule.Order", b =>
@@ -367,34 +362,15 @@ namespace Persistence.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DomainLayer.Models.ProductModule.ProductType", "ProductType")
-                        .WithMany()
-                        .HasForeignKey("TypeId")
+                    b.HasOne("DomainLayer.Models.ProductModule.SubCategory", "SubCategory")
+                        .WithMany("Products")
+                        .HasForeignKey("SubCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ProductBrand");
 
-                    b.Navigation("ProductType");
-                });
-
-            modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductCategory", b =>
-                {
-                    b.HasOne("DomainLayer.Models.ProductModule.Category", "Category")
-                        .WithMany("ProductCategories")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DomainLayer.Models.ProductModule.Product", "Product")
-                        .WithMany("ProductCategories")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Product");
+                    b.Navigation("SubCategory");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductReview", b =>
@@ -415,6 +391,17 @@ namespace Persistence.Data.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.SubCategory", b =>
+                {
+                    b.HasOne("DomainLayer.Models.ProductModule.Category", "Category")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("DomainLayer.Models.OrderModule.Order", b =>
                 {
                     b.Navigation("Items");
@@ -422,13 +409,11 @@ namespace Persistence.Data.Migrations
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.Category", b =>
                 {
-                    b.Navigation("ProductCategories");
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("DomainLayer.Models.ProductModule.Product", b =>
                 {
-                    b.Navigation("ProductCategories");
-
                     b.Navigation("Reviews");
                 });
 
@@ -440,6 +425,11 @@ namespace Persistence.Data.Migrations
             modelBuilder.Entity("DomainLayer.Models.ProductModule.ProductReview", b =>
                 {
                     b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("DomainLayer.Models.ProductModule.SubCategory", b =>
+                {
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

@@ -6,19 +6,19 @@
         public string Description { get; set; } = null!;
         public string PictureUrl { get; set; } = null!;
         public decimal Price { get; set; }
+        public decimal Discount { get; set; }
 
-        // Inventory — default 0 means not tracked yet
         public int StockQuantity { get; set; } = 0;
 
         public ProductBrand ProductBrand { get; set; } = null!;
         public int BrandId { get; set; }
 
-        public ProductType ProductType { get; set; } = null!;
-        public int TypeId { get; set; }
-        public decimal? Discount { get; set; }   
-        public ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
+        // Was ProductType/TypeId — now SubCategory/SubCategoryId.
+        // SubCategory belongs to a Category, so Product -> SubCategory -> Category
+        // is the full chain. No more direct/many-to-many Category link on Product.
+        public SubCategory SubCategory { get; set; } = null!;
+        public int SubCategoryId { get; set; }
 
-        public ICollection<ProductCategory> ProductCategories { get; set; }
-            = new List<ProductCategory>();
+        public ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
     }
 }

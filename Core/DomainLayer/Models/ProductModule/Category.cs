@@ -5,8 +5,9 @@
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
 
-        // Navigation — optional, loaded only when explicitly included
-        public ICollection<ProductCategory> ProductCategories { get; set; }
-            = new List<ProductCategory>();
+        // 1-to-many: a Category owns many SubCategories.
+        // Replaces the old many-to-many ProductCategory join table.
+        public ICollection<SubCategory> SubCategories { get; set; }
+            = new List<SubCategory>();
     }
 }

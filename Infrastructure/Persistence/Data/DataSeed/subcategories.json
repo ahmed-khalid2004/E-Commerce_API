@@ -1,0 +1,93 @@
+[
+  {
+    "Name": "Smartphones",
+    "CategoryName": "Electronics & Mobiles"
+  },
+  {
+    "Name": "Laptops & Computers",
+    "CategoryName": "Electronics & Mobiles"
+  },
+  {
+    "Name": "Mobile Accessories",
+    "CategoryName": "Electronics & Mobiles"
+  },
+
+  {
+    "Name": "Men's Clothing",
+    "CategoryName": "Fashion & Clothing"
+  },
+  {
+    "Name": "Women's Clothing",
+    "CategoryName": "Fashion & Clothing"
+  },
+  {
+    "Name": "Shoes & Bags",
+    "CategoryName": "Fashion & Clothing"
+  },
+
+  {
+    "Name": "Kitchen Appliances",
+    "CategoryName": "Home & Kitchen"
+  },
+  {
+    "Name": "Home Decor",
+    "CategoryName": "Home & Kitchen"
+  },
+
+  {
+    "Name": "Dairy & Cheese",
+    "CategoryName": "Groceries & Food"
+  },
+  {
+    "Name": "Snacks & Sweets",
+    "CategoryName": "Groceries & Food"
+  },
+  {
+    "Name": "Frozen Foods",
+    "CategoryName": "Groceries & Food"
+  },
+  {
+    "Name": "Pantry Staples",
+    "CategoryName": "Groceries & Food"
+  },
+
+  {
+    "Name": "Skincare",
+    "CategoryName": "Beauty & Personal Care"
+  },
+  {
+    "Name": "Haircare",
+    "CategoryName": "Beauty & Personal Care"
+  },
+  {
+    "Name": "Fragrances",
+    "CategoryName": "Beauty & Personal Care"
+  },
+
+  {
+    "Name": "Sportswear",
+    "CategoryName": "Sports & Outdoors"
+  },
+  {
+    "Name": "Fitness Equipment",
+    "CategoryName": "Sports & Outdoors"
+  },
+
+  {
+    "Name": "Books",
+    "CategoryName": "Books & Stationery"
+  },
+  {
+    "Name": "School & Office Supplies",
+    "CategoryName": "Books & Stationery"
+  },
+
+  {
+    "Name": "Baby Care",
+    "CategoryName": "Baby & Kids"
+  },
+  {
+    "Name": "Toys",
+    "CategoryName": "Baby & Kids"
+  }
+]

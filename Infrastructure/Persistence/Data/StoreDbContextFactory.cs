@@ -9,7 +9,7 @@ namespace Persistence.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<StoreDbContext>();
             optionsBuilder.UseSqlServer(
-                "Server=SQL9001.site4now.net;Database=db_acab93_ecommerce;User Id=db_acab93_ecommerce_admin;Password=Eng@0111;Encrypt=True;TrustServerCertificate=True");
+                "Server=SQL9001.site4now.net;Database=db_acab93_ecommerce;User Id=db_acab93_ecommerce_admin;Password=Ahmed@0111;Encrypt=True;TrustServerCertificate=True");
             return new StoreDbContext(optionsBuilder.Options);
         }
     }

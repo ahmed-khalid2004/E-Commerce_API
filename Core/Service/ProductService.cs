@@ -2,6 +2,7 @@
 using DomainLayer.Contracts;
 using DomainLayer.Exceptions;
 using DomainLayer.Models.ProductModule;
+using Microsoft.EntityFrameworkCore;
 using Service.Specifications;
 using Shared;
 using Shared.DataTransferObjects.ProductModuleDTOs;
@@ -38,23 +39,9 @@ namespace Service
         public async Task<ProductDTO> CreateProductAsync(CreateProductDTO dto)
         {
             var product = _mapper.Map<CreateProductDTO, Product>(dto);
-
-            // Resolve CategoryIds → ProductCategory join rows
-            if (dto.CategoryIds.Count > 0)
-            {
-                var categoryRepo = _unitOfWork.GetRepository<Category, int>();
-                foreach (var catId in dto.CategoryIds.Distinct())
-                {
-                    _ = await categoryRepo.GetByIdAsync(catId)
-                        ?? throw new CategoryNotFoundException(catId);
-                    product.ProductCategories.Add(new ProductCategory { CategoryId = catId });
-                }
-            }
-
             await _unitOfWork.GetRepository<Product, int>().AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
-            // Reload with full includes for the response
             var spec = new ProductWithBrandAndTypeSpecifications(product.Id);
             var created = await _unitOfWork.GetRepository<Product, int>().GetByIdAsync(spec);
             return _mapper.Map<Product, ProductDTO>(created!);
@@ -63,25 +50,10 @@ namespace Service
         public async Task UpdateProductAsync(int id, UpdateProductDTO dto)
         {
             var repo = _unitOfWork.GetRepository<Product, int>();
-            var spec = new ProductWithBrandAndTypeSpecifications(id);
-            var product = await repo.GetByIdAsync(spec)
+            var product = await repo.GetByIdAsync(id)
                 ?? throw new ProductNotFoundException(id);
 
             _mapper.Map(dto, product);
-
-            // Full replace of categories
-            product.ProductCategories.Clear();
-            if (dto.CategoryIds.Count > 0)
-            {
-                var categoryRepo = _unitOfWork.GetRepository<Category, int>();
-                foreach (var catId in dto.CategoryIds.Distinct())
-                {
-                    _ = await categoryRepo.GetByIdAsync(catId)
-                        ?? throw new CategoryNotFoundException(catId);
-                    product.ProductCategories.Add(new ProductCategory { CategoryId = catId });
-                }
-            }
-
             repo.Update(product);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -139,48 +111,32 @@ namespace Service
             await _unitOfWork.SaveChangesAsync();
         }
 
-        // ── Types Read ────────────────────────────────────────────────────────
+        // ── Derived filter data — no Brand<->SubCategory relation in schema ────
+        // These queries infer the relationship live from Products, exactly as
+        // discussed: Product is the single source of truth for which Brands
+        // appear under which SubCategory/Category.
 
-        public async Task<IEnumerable<TypeDTO>> GetAllTypesAsync()
+        public async Task<IEnumerable<BrandDTO>> GetBrandsBySubCategoryAsync(int subCategoryId)
         {
-            var types = await _unitOfWork.GetRepository<ProductType, int>().GetAllAsync();
-            return _mapper.Map<IEnumerable<ProductType>, IEnumerable<TypeDTO>>(types);
+            // Verify the SubCategory exists — fail fast with a clear 404
+            var subCategoryRepo = _unitOfWork.GetRepository<SubCategory, int>();
+            _ = await subCategoryRepo.GetByIdAsync(subCategoryId)
+                ?? throw new SubCategoryNotFoundException(subCategoryId);
+
+            var spec = new DistinctBrandsBySubCategorySpecifications(subCategoryId);
+            var brands = await _unitOfWork.GetRepository<ProductBrand, int>().GetAllAsync(spec);
+            return _mapper.Map<IEnumerable<ProductBrand>, IEnumerable<BrandDTO>>(brands);
         }
 
-        public async Task<TypeDTO> GetTypeByIdAsync(int id)
+        public async Task<IEnumerable<BrandDTO>> GetBrandsByCategoryAsync(int categoryId)
         {
-            var type = await _unitOfWork.GetRepository<ProductType, int>().GetByIdAsync(id)
-                ?? throw new ProductTypeNotFoundException(id);
-            return _mapper.Map<ProductType, TypeDTO>(type);
-        }
+            var categoryRepo = _unitOfWork.GetRepository<Category, int>();
+            _ = await categoryRepo.GetByIdAsync(categoryId)
+                ?? throw new CategoryNotFoundException(categoryId);
 
-        // ── Types Admin CRUD ──────────────────────────────────────────────────
-
-        public async Task<TypeDTO> CreateTypeAsync(CreateTypeDTO dto)
-        {
-            var type = _mapper.Map<CreateTypeDTO, ProductType>(dto);
-            await _unitOfWork.GetRepository<ProductType, int>().AddAsync(type);
-            await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<ProductType, TypeDTO>(type);
-        }
-
-        public async Task UpdateTypeAsync(int id, CreateTypeDTO dto)
-        {
-            var repo = _unitOfWork.GetRepository<ProductType, int>();
-            var type = await repo.GetByIdAsync(id)
-                ?? throw new ProductTypeNotFoundException(id);
-            _mapper.Map(dto, type);
-            repo.Update(type);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task DeleteTypeAsync(int id)
-        {
-            var repo = _unitOfWork.GetRepository<ProductType, int>();
-            var type = await repo.GetByIdAsync(id)
-                ?? throw new ProductTypeNotFoundException(id);
-            repo.Remove(type);
-            await _unitOfWork.SaveChangesAsync();
+            var spec = new DistinctBrandsByCategorySpecifications(categoryId);
+            var brands = await _unitOfWork.GetRepository<ProductBrand, int>().GetAllAsync(spec);
+            return _mapper.Map<IEnumerable<ProductBrand>, IEnumerable<BrandDTO>>(brands);
         }
     }
 }

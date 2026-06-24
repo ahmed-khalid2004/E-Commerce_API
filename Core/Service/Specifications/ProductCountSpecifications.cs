@@ -8,12 +8,13 @@ namespace Service.Specifications
         public ProductCountSpecifications(ProductQueryParams queryParams)
             : base(p =>
                 (!queryParams.BrandId.HasValue || p.BrandId == queryParams.BrandId) &&
-                (!queryParams.TypeId.HasValue || p.TypeId == queryParams.TypeId) &&
-                (!queryParams.CategoryId.HasValue || p.ProductCategories.Any(pc => pc.CategoryId == queryParams.CategoryId)) &&
+                (!queryParams.SubCategoryId.HasValue || p.SubCategoryId == queryParams.SubCategoryId) &&
+                (!queryParams.CategoryId.HasValue || p.SubCategory.CategoryId == queryParams.CategoryId) &&
                 (string.IsNullOrWhiteSpace(queryParams.search) || p.Name.ToLower().Contains(queryParams.search.ToLower()))
             )
         {
-            // No includes needed — EF translates .Any() into EXISTS subquery for COUNT
+            // No includes needed — EF translates p.SubCategory.CategoryId into a JOIN
+            // automatically for the WHERE clause, even without explicit Include.
         }
     }
 }

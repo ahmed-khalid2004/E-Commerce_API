@@ -20,9 +20,17 @@ namespace Presentation.Controllers
         public async Task<ActionResult<CategoryDTO>> GetCategory(int id)
             => Ok(await _serviceManager.CategoryService.GetCategoryByIdAsync(id));
 
+        // Derived filter data — Brands present anywhere under this Category
+        // (across all its SubCategories). Inferred from Products, no schema change.
+        [AllowAnonymous]
+        [HttpGet("{id:int}/brands")]
+        [Cache]
+        public async Task<ActionResult<IEnumerable<BrandDTO>>> GetBrandsForCategory(int id)
+            => Ok(await _serviceManager.ProductService.GetBrandsByCategoryAsync(id));
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        [InvalidateCache("api/categories", "api/products")]
+        [InvalidateCache("api/categories", "api/products", "api/subcategories")]
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CreateCategoryDTO dto)
         {
             var created = await _serviceManager.CategoryService.CreateCategoryAsync(dto);
@@ -31,7 +39,7 @@ namespace Presentation.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
-        [InvalidateCache("api/categories", "api/products")]
+        [InvalidateCache("api/categories", "api/products", "api/subcategories")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CreateCategoryDTO dto)
         {
             await _serviceManager.CategoryService.UpdateCategoryAsync(id, dto);
@@ -40,7 +48,7 @@ namespace Presentation.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
-        [InvalidateCache("api/categories", "api/products")]
+        [InvalidateCache("api/categories", "api/products", "api/subcategories")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             await _serviceManager.CategoryService.DeleteCategoryAsync(id);
