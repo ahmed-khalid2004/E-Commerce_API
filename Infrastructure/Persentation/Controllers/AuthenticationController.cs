@@ -23,6 +23,11 @@ namespace Presentation.Controllers
             => Ok(await _serviceManager.AuthenticationService.CheckEmailAsync(email));
 
         [Authorize]
+        [HttpGet("CurrentUser")]
+        public async Task<ActionResult<UserDTO>> GetCurrentUser()
+            => Ok(await _serviceManager.AuthenticationService.GetCurrentUserAsync(GetEmailFromToken()));
+
+        [Authorize]
         [HttpGet("address")]
         public async Task<ActionResult<AddressDTO>> GetCurrentUserAddress()
             => Ok(await _serviceManager.AuthenticationService.GetCurrentUserAddressAsync(GetEmailFromToken()));
@@ -32,8 +37,6 @@ namespace Presentation.Controllers
         public async Task<ActionResult<AddressDTO>> UpdateCurrentUserAddress(AddressDTO addressDTO)
             => Ok(await _serviceManager.AuthenticationService.UpdateCurrentUserAddressAsync(GetEmailFromToken(), addressDTO));
 
-        // ── Forgot Password — Step 1 ──────────────────────────────────────────
-        // Generates a 6-digit OTP and sends it to the user's email
         [AllowAnonymous]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] SendResetCodeDTO dto)
@@ -42,23 +45,19 @@ namespace Presentation.Controllers
             return Ok(new { message = "Verification code sent to your email." });
         }
 
-        // ── Forgot Password — Step 2 ──────────────────────────────────────────
-        // Verifies the OTP before showing the new password form
         [AllowAnonymous]
         [HttpPost("verify-reset-code")]
-        public async Task<ActionResult<bool>> VerifyResetCode([FromBody] VerifyResetCodeDTO dto)
+        public async Task<IActionResult> VerifyResetCode([FromBody] VerifyResetCodeDTO dto)
         {
-            var isValid = await _serviceManager.AuthenticationService
+            var resetToken = await _serviceManager.AuthenticationService
                 .VerifyResetCodeAsync(dto.Email, dto.Code);
 
-            if (!isValid)
+            if (resetToken is null)
                 return BadRequest(new { message = "Invalid or expired verification code." });
 
-            return Ok(new { message = "Code verified successfully." });
+            return Ok(new { message = "Code verified successfully.", resetToken });
         }
 
-        // ── Forgot Password — Step 3 ──────────────────────────────────────────
-        // Resets the password using the verified OTP
         [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)

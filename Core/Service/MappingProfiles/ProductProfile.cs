@@ -31,9 +31,8 @@ namespace Service.MappingProfiles
             CreateMap<ProductBrand, BrandDTO>();
             CreateMap<CreateBrandDTO, ProductBrand>();
 
-            // ── SubCategory (was ProductType) ─────────────────────────────────
-            CreateMap<SubCategory, SubCategoryDTO>();
-            CreateMap<CreateSubCategoryDTO, SubCategory>();
+            CreateMap<SubCategory, SubCategoryDTO>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
 
             // ── Category — includes nested SubCategories ──────────────────────
             CreateMap<Category, CategoryDTO>();

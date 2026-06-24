@@ -10,7 +10,7 @@ using ServiceAbstracion;
 using Shared.DataTransferObjects.IdentityDTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text; 
+using System.Text;
 
 namespace Service
 {
@@ -19,25 +19,21 @@ namespace Service
         IConfiguration _configuration,
         IMapper _mapper,
         IEmailService _emailService,
-        IRedisClient  _redis) : IAuthenticationService
+        IRedisClient _redisClient) : IAuthenticationService
     {
-
         // ── Auth ──────────────────────────────────────────────────────────────
 
         public async Task<UserDTO> LoginAsync(LoginDTO loginDTO)
         {
-            var user = await _userManager.FindByEmailAsync(loginDTO.Email)
+            var user = await _userManager.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Email == loginDTO.Email)
                 ?? throw new UserNotFoundException(loginDTO.Email);
 
             if (!await _userManager.CheckPasswordAsync(user, loginDTO.Password))
                 throw new UnauthorizedException();
 
-            return new UserDTO
-            {
-                Email = user.Email!,
-                DisplayName = user.DisplayName,
-                Token = await CreateTokenAsync(user)
-            };
+            return await BuildUserDtoAsync(user);
         }
 
         public async Task<UserDTO> RegisterAsync(RegisterDTO registerDTO)
@@ -47,24 +43,31 @@ namespace Service
                 DisplayName = registerDTO.DisplayName,
                 Email = registerDTO.Email,
                 UserName = registerDTO.Email,
-                PhoneNumber = registerDTO.PhoneNumber,
-                Address = _mapper.Map<AddressDTO, Address>(registerDTO.Address)  
+                PhoneNumber = registerDTO.PhoneNumber
             };
+
+            if (registerDTO.Address is not null)
+                user.Address = _mapper.Map<AddressDTO, Address>(registerDTO.Address);
 
             var result = await _userManager.CreateAsync(user, registerDTO.Password);
             if (!result.Succeeded)
                 throw new BadRequestException(result.Errors.Select(e => e.Description).ToList());
 
-            return new UserDTO
-            {
-                Email = user.Email!,
-                DisplayName = user.DisplayName,
-                Token = await CreateTokenAsync(user)
-            };
+            return await BuildUserDtoAsync(user);
         }
 
         public async Task<bool> CheckEmailAsync(string email)
             => await _userManager.FindByEmailAsync(email) is not null;
+
+        public async Task<UserDTO> GetCurrentUserAsync(string email)
+        {
+            var user = await _userManager.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Email == email)
+                ?? throw new UserNotFoundException(email);
+
+            return await BuildUserDtoAsync(user);
+        }
 
         // ── Address ───────────────────────────────────────────────────────────
 
@@ -102,57 +105,96 @@ namespace Service
             return _mapper.Map<AddressDTO>(user.Address);
         }
 
+        // ── Forgot Password — Step 1: Send OTP ────────────────────────────────
+
         public async Task SendResetCodeAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email)
                 ?? throw new UserNotFoundException(email);
 
             var otp = new Random().Next(100000, 999999).ToString();
-            await _redis.SetAsync($"otp:{email}", otp, TimeSpan.FromMinutes(10));
+
+            // Key: "otp:{email}" — 10 minute TTL, one active OTP per email
+            await _redisClient.SetAsync($"otp:{email}", otp, TimeSpan.FromMinutes(10));
             await _emailService.SendOtpAsync(email, otp);
         }
 
-        public async Task<bool> VerifyResetCodeAsync(string email, string code)
-        {
-            var stored = await _redis.GetAsync($"otp:{email}");
-            if (stored is null || stored != code) return false;
+        // ── Forgot Password — Step 2: Verify OTP, issue a Reset Token ─────────
+        //
+        // On success, generates a random, unguessable token stored in Redis
+        // keyed by email. The frontend only asks the user for the OTP ONCE
+        // here — the returned token is what's sent to ResetPasswordAsync,
+        // not the original 6-digit code. This closes the gap where anyone
+        // who merely knows the email (without ever seeing the OTP) could
+        // otherwise call reset-password directly.
 
-            await _redis.SetAsync($"otp-verified:{email}", "true", TimeSpan.FromMinutes(10));
-            await _redis.DeleteAsync($"otp:{email}");
-            return true;
+        public async Task<string?> VerifyResetCodeAsync(string email, string code)
+        {
+            var stored = await _redisClient.GetAsync($"otp:{email}");
+            if (stored is null || stored != code)
+                return null;
+
+            // OTP confirmed — consume it (one-time use) and issue a reset token
+            await _redisClient.DeleteAsync($"otp:{email}");
+
+            var resetToken = Guid.NewGuid().ToString("N"); // 32-char random token
+            await _redisClient.SetAsync($"reset-token:{email}", resetToken, TimeSpan.FromMinutes(10));
+
+            return resetToken;
         }
+
+        // ── Forgot Password — Step 3: Reset Password using the Reset Token ────
 
         public async Task ResetPasswordAsync(ResetPasswordDTO dto)
         {
-            var verified = await _redis.GetAsync($"otp-verified:{dto.Email}");
-            if (verified != "true")
-                throw new BadRequestException(["Please verify your reset code first."]);
+            var storedToken = await _redisClient.GetAsync($"reset-token:{dto.Email}");
+            if (storedToken is null || storedToken != dto.ResetToken)
+                throw new BadRequestException(["Invalid or expired reset session. Please request a new code."]);
 
             var user = await _userManager.FindByEmailAsync(dto.Email)
                 ?? throw new UserNotFoundException(dto.Email);
 
-            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, resetToken, dto.NewPassword);
+            var identityToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, identityToken, dto.NewPassword);
 
             if (!result.Succeeded)
                 throw new BadRequestException(result.Errors.Select(e => e.Description).ToList());
 
-            await _redis.DeleteAsync($"otp-verified:{dto.Email}");
+            // One-time use — invalidate immediately after success
+            await _redisClient.DeleteAsync($"reset-token:{dto.Email}");
+        }
+
+        // ── Shared DTO builder ────────────────────────────────────────────────
+
+        private async Task<UserDTO> BuildUserDtoAsync(ApplicationUser user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new UserDTO
+            {
+                Id = user.Id,
+                Email = user.Email!,
+                DisplayName = user.DisplayName,
+                PhoneNumber = user.PhoneNumber,
+                UserName = user.UserName,
+                Roles = roles,
+                Address = user.Address is null ? null : _mapper.Map<Address, AddressDTO>(user.Address),
+                Token = await CreateTokenAsync(user, roles)
+            };
         }
 
         // ── Token ─────────────────────────────────────────────────────────────
 
-        private async Task<string> CreateTokenAsync(ApplicationUser user)
+        private async Task<string> CreateTokenAsync(ApplicationUser user, IList<string>? roles = null)
         {
+            roles ??= await _userManager.GetRolesAsync(user);
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id!),
                 new(ClaimTypes.Email,          user.Email!),
-                new(ClaimTypes.Name,           user.UserName!),
-                new("DisplayName",             user.DisplayName)
+                new(ClaimTypes.Name,           user.UserName!)
             };
-
-            var roles = await _userManager.GetRolesAsync(user);
             claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
             var jwtSection = _configuration.GetSection("JWT:Options");

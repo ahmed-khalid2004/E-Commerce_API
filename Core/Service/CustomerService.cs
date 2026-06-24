@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Service.Specifications.OrderModuleSpecifications;
 using ServiceAbstracion;
 using Shared.DataTransferObjects.IdentityDTOs;
+using Shared.DataTransferObjects.OrderDTOs;
 
 namespace Service
 {
@@ -30,6 +31,23 @@ namespace Service
             return mapper.Map<IReadOnlyList<CustomerDTO>>(users);
         }
 
+        public async Task<CustomerDTO> GetCustomerByIdAsync(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId)
+                ?? throw new UserNotFoundException(userId);
+            return mapper.Map<CustomerDTO>(user);
+        }
+
+        public async Task<IReadOnlyList<OrderToReturnDTO>> GetCustomerOrdersAsync(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId)
+                ?? throw new UserNotFoundException(userId);
+
+            var spec = new OrderSpecifications(user.Email!);
+            var orders = await unitOfWork.GetRepository<Order, Guid>().GetAllAsync(spec);
+            return mapper.Map<IReadOnlyList<OrderToReturnDTO>>(orders);
+        }
+
         public async Task<CustomerStatsDTO> GetCustomerStatsAsync(string userId)
         {
             var user = await userManager.FindByIdAsync(userId)
@@ -38,12 +56,14 @@ namespace Service
             var spec = new OrderSpecifications(user.Email!);
             var orders = await unitOfWork.GetRepository<Order, Guid>().GetAllAsync(spec);
 
-            var successful = orders.Where(o => SuccessfulStatuses.Contains(o.Status)).ToList();
+            var successfulTotal = orders
+                .Where(o => SuccessfulStatuses.Contains(o.Status))
+                .Sum(o => o.GetTotal());
 
             return new CustomerStatsDTO
             {
-                TotalOrders = successful.Count,
-                TotalSpend = successful.Sum(o => o.GetTotal())
+                TotalOrders = orders.Count(),
+                TotalSpend = successfulTotal
             };
         }
 
@@ -51,7 +71,6 @@ namespace Service
         {
             var user = await userManager.FindByIdAsync(userId)
                 ?? throw new UserNotFoundException(userId);
-
             var result = await userManager.DeleteAsync(user);
             if (!result.Succeeded)
                 throw new BadRequestException(result.Errors.Select(e => e.Description).ToList());
