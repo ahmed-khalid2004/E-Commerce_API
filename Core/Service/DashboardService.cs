@@ -24,22 +24,25 @@ namespace Service
 
         public async Task<DashboardSummaryDTO> GetSummaryAsync()
         {
-            var productsTask = unitOfWork.GetRepository<Product, int>().GetAllAsync();
-            var ordersTask = unitOfWork.GetRepository<Order, Guid>().GetAllAsync(new OrderSpecifications());
-            var customersTask = userManager.Users.CountAsync();
+            var products = await unitOfWork
+                            .GetRepository<Product, int>()
+                            .GetAllAsync();
 
-            await Task.WhenAll(productsTask, ordersTask, customersTask);
+            var orders = await unitOfWork
+                .GetRepository<Order, Guid>()
+                .GetAllAsync(new OrderSpecifications());
 
-            var orders = ordersTask.Result.ToList();
+            var totalCustomers = await userManager.Users.CountAsync();
+
             var totalRevenue = orders
                 .Where(o => SuccessfulStatuses.Contains(o.Status))
                 .Sum(o => o.GetTotal());
 
             return new DashboardSummaryDTO
             {
-                TotalProducts = productsTask.Result.Count(),
-                TotalOrders = orders.Count,
-                TotalCustomers = customersTask.Result,
+                TotalProducts = products.Count(),
+                TotalOrders = orders.Count(),
+                TotalCustomers = totalCustomers,
                 TotalRevenue = totalRevenue
             };
         }
